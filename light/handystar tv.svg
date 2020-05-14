@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="Ebene_1"
+   viewBox="0 0 550 156.6"
+   version="1.1"
+   sodipodi:docname="Handystar TV.svg"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)">
+  <metadata
+     id="metadata18">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs16" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1013"
+     id="namedview14"
+     showgrid="false"
+     inkscape:zoom="1.8976175"
+     inkscape:cx="253.55851"
+     inkscape:cy="65.588552"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="Logo_1_2_" />
+  <style
+     id="style2">.st0{fill:#1c282e}.st1{fill:#ff9d00}</style>
+  <g
+     id="Logo_1_2_">
+    <path
+       class="st0"
+       d="m 0,91.4 h 15.5 v 24.7 H 39.3 V 91.4 h 15.5 v 63.7 H 39.3 V 129.8 H 15.5 v 25.3 H 0 Z m 105.7,52.1 h -23 l -3.9,11.6 H 60.7 L 85.5,91.4 h 17.7 l 24.5,63.7 h -18.1 z m -3.9,-11.7 -4.1,-12.1 c -1.2,-3.8 -2.5,-8.6 -3.4,-13.7 h -0.4 c -0.8,5 -2.2,9.9 -3.4,13.7 l -4,12.1 z M 133.7,91.4 H 149 l 18.4,23.8 c 3,4 5.9,8 10.1,14.1 h 0.2 c -0.9,-6.1 -1,-10.2 -1,-15.9 v -22 H 192 v 64.3 h -13 l -20.4,-25.6 c -3.1,-4 -6.2,-8 -10.3,-14.1 H 148 c 0.9,6.1 1.1,10.2 1.1,15.9 v 23.3 H 133.7 V 91.4 Z m 71.1,0 h 20.9 c 23.3,0 36.4,12 36.4,31.7 0,19.9 -13.8,32 -36.5,32 h -20.8 z m 20.2,49.9 c 14.2,0 21.2,-5.7 21.2,-18.4 0,-12.2 -6.9,-17.8 -21.1,-17.8 h -4.8 v 36.2 z m 57.2,-11.5 -22.5,-38.4 h 18.5 l 6.2,13.3 c 2.1,4.7 3.8,8.3 5.5,12.6 h 0.3 c 1.7,-4.3 3.3,-7.9 5.4,-12.6 l 6.2,-13.3 h 18.5 l -22.6,38.4 v 25.3 h -15.5 z"
+       id="path4"
+       inkscape:connector-curvature="0"
+       style="fill:#79adc7;fill-opacity:1" />
+    <path
+       class="st1"
+       d="m 320.2,143.7 10.6,-7.5 1.6,0.5 c 3.2,4.9 7.1,7 12.1,7 4.7,0 7.8,-2.5 7.8,-5.8 0,-3.5 -2.1,-5.6 -13,-10.2 -12.2,-5 -16.6,-10.6 -16.6,-19.9 0,-10.2 9.4,-18.1 22.5,-18.1 9.8,0 17.5,4.1 22.4,11.3 l -10.5,7.8 -1.6,-0.4 c -2.4,-3.6 -5.8,-5.8 -10.2,-5.8 -4.2,0 -6.6,2.2 -6.6,5 0,2.8 1.3,4.2 12.7,9.2 12.6,5.5 16.8,11.2 16.8,19.4 0,11.6 -9.9,20.4 -23.8,20.4 -10.1,0.2 -18.6,-4.1 -24.2,-12.9 z m 53.6,-38.3 v -14 H 429 v 14 h -19.7 v 49.7 h -15.7 v -49.7 z m 94.7,38.1 h -23 l -3.9,11.6 H 423.5 L 448.3,91.4 H 466 l 24.5,63.7 h -18.1 z m -3.9,-11.7 -4.1,-12.1 c -1.2,-3.8 -2.5,-8.6 -3.4,-13.7 h -0.4 c -0.8,5 -2.2,9.9 -3.4,13.7 l -4,12.1 z m 85.4,21.7 -0.7,1.6 H 533 l -15.7,-23.7 h -5.1 v 23.7 H 496.5 V 91.4 h 22.9 c 16.1,0 24.2,6.8 24.2,20.5 0,8.2 -3.9,14 -11.1,17 z m -37.8,-33.9 h 6.2 c 6.8,0 10.2,-2.4 10.2,-7.7 0,-5.7 -3.3,-7.9 -10.2,-7.9 h -6.2 z"
+       id="path6"
+       inkscape:connector-curvature="0"
+       style="fill:#ff9d00" />
+    <g
+       id="g10">
+      <path
+         class="st1"
+         d="m 275,0 10.8,21.9 24.2,3.5 -17.5,17.1 4.1,24.1 L 275,55.2 253.4,66.6 257.5,42.5 240,25.4 264.2,21.9 Z m 90,0 10.8,21.9 24.2,3.5 -17.5,17.1 4.1,24.1 L 365,55.2 343.4,66.6 347.5,42.5 330,25.4 354.2,21.9 Z m 90,0 10.8,21.9 24.2,3.5 -17.5,17.1 4.1,24.1 L 455,55.2 433.4,66.6 437.5,42.5 420,25.4 444.2,21.9 Z M 185,0 195.8,21.9 220,25.4 202.5,42.5 206.6,66.6 185,55.2 163.4,66.6 167.5,42.5 150,25.4 174.2,21.9 Z M 95,0 105.8,21.9 130,25.4 112.5,42.5 116.6,66.6 95,55.2 73.4,66.6 77.5,42.5 60,25.4 84.2,21.9 Z"
+         id="path8"
+         inkscape:connector-curvature="0"
+         style="fill:#ff9d00" />
+    </g>
+  </g>
+</svg>

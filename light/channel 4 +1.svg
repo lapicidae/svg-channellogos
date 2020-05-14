@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="47.000008"
+   height="50"
+   id="svg8937"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   version="1.0"
+   sodipodi:docname="Channel4+1Logo.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs
+     id="defs8939">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective8945" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.979899"
+     inkscape:cx="102.97022"
+     inkscape:cy="57.678358"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1400"
+     inkscape:window-height="978"
+     inkscape:window-x="0"
+     inkscape:window-y="25" />
+  <metadata
+     id="metadata8942">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-309.42693,-553.96995)">
+    <g
+       id="g8930"
+       transform="matrix(0.2499292,0,0,0.25,309.42693,553.96995)">
+      <path
+         sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccc"
+         id="path2363"
+         d="M 137.04325,-3.4638958e-13 L 133.26618,4.5996369 L 133.15987,16.255388 L 127.45789,11.991499 L 110.1673,34.144708 L 110.06659,45.800459 L 104.37021,41.530971 L 72.44273,82.345585 L 88.670138,95.137283 L 120.56964,54.42896 L 120.73191,82.183472 L 110.1729,95.668982 L 110.1673,105.34944 L 110.06659,174.36625 L 104.46533,170.06881 L 87.068434,170.06881 L 87.068434,187.35383 L 103.27346,199.98318 L 103.36858,182.78216 L 120.73191,182.78216 L 120.73191,195.59621 L 126.37234,200 L 126.46186,46.746127 L 143.61815,24.895078 L 143.65173,195.4675 L 149.47121,199.99436 L 149.56634,182.78216 L 188.05328,182.64791 L 172.06647,170.06881 L 166.93526,170.06881 L 166.70584,176.91792 L 149.56074,176.8731 L 149.56074,54.926978 L 166.71702,32.382075 L 162.45314,28.968719 L 149.56074,45.291253 L 149.56074,17.184267 L 153.04684,12.489506 L 137.04325,-3.4638958e-13 z"
+         style="fill:#559fd0;fill-opacity:1" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         id="path2399"
+         d="M 43.33836,140.63565 L 27.373958,140.63565 L 27.373958,157.92068 L 43.578982,170.55002 L 43.33836,140.63565 z"
+         style="fill:#559fd0;fill-opacity:1" />
+      <path
+         sodipodi:nodetypes="ccccccccccccccc"
+         id="path8934"
+         d="M 27.094175,83.2466 L 27.094175,94.146899 L 27.077388,94.13572 L 26.982262,111.33685 L 9.6189356,111.33685 L 9.6413183,111.35357 L 0,111.35357 L 0,128.63859 L 16.205025,141.26793 L 16.300151,124.06691 L 43.461474,124.05009 L 43.394326,95.959942 L 60.757652,95.959942 L 44.491075,83.2466 L 27.094175,83.2466 z"
+         style="fill:#559fd0;fill-opacity:1" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         id="path3182"
+         d="M 72.308506,111.04537 L 60.229457,111.04537 L 60.322843,123.75871 L 88.575092,123.75871 L 72.308506,111.04537 z"
+         style="fill:#559fd0;fill-opacity:1" />
+    </g>
+  </g>
+</svg>
