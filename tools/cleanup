@@ -1,10 +1,23 @@
 #!/bin/bash
 
-functions=("vectra" "two")
+functions=("vectra" "lowercase")
 
 ### Functions
 function vectra {
 	find $1 -type f -name "*.svg" -print0 | xargs -0 sed -i -e 's/ xmlns:v="https:\/\/vecta.io\/nano"//g'
+}
+
+function lowercase {
+	upFiles=()
+	while IFS=  read -r -d $'\0'; do
+		upFiles+=("$REPLY")
+	done < <(find $1 -type f -name "*[A-Z]*.svg" -print0)
+	for i in "${upFiles[@]}"; do
+		DIR=$(dirname "${i}")
+		FILE=$(basename "${i}")
+		echo "renamed $DIR/$FILE to $DIR/${FILE,,}"
+		mv "$DIR/$FILE" "$DIR/${FILE,,}" 
+	done
 }
 
 # Usage Message
