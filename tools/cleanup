@@ -1,0 +1,50 @@
+#!/bin/bash
+
+functions=("vectra" "two")
+
+### Functions
+function vectra {
+	find $1 -type f -name "*.svg" -print0 | xargs -0 sed -i -e 's/ xmlns:v="https:\/\/vecta.io\/nano"//g'
+}
+
+# Usage Message
+function usage {
+	echo "########## CleanUp ##########" 1>&2
+	if [ ! -z "${1}" ]; then
+		echo "ERROR: $1" 1>&2
+	fi
+	echo "Usage: $0 [-f <function>] [-p <Path>] [-d <debug>]" 1>&2
+	echo "Functions:" 1>&2
+	printf '\t%s\n' "${functions[@]}" 1>&2
+	echo "#############################" 1>&2
+	exit 1
+}
+
+
+### check Parameters
+while getopts "df:p:" o; do
+	case "${o}" in
+		d)
+			DEBUG=true
+			;;
+		f)
+			FUNCTION=${OPTARG}
+			;;
+		p)	DIR=${OPTARG}
+			;;
+		*)
+			usage
+			;;
+	esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${FUNCTION}" ] || [ -z "${DIR}" ]; then
+	usage "Function or Path missing!"
+elif [ ! -d "$DIR" ]; then
+	usage "Wrong Path '$DIR'!"
+elif [[ ! " ${functions[@]} " =~ " ${FUNCTION} " ]]; then
+	usage "Wrong Function '$FUNCTION'!"
+else
+	$FUNCTION $DIR
+fi
