@@ -1,0 +1,84 @@
+#!/bin/bash
+
+### Functions
+# Usage Message
+function usage {
+	echo "########## Install ##########" 1>&2
+	if [ ! -z "${1}" ]; then
+		echo "ERROR: $1" 1>&2
+	fi
+	echo "Usage: $0 [-c <light|dark>] [-p <OutputPath>] [-r <remove content of OutputPath>] [-d <debug>]" 1>&2
+	echo "#############################" 1>&2
+	exit 1
+}
+
+function copy {
+	if [ $debug ]; then
+		cp -r -v $1 $2
+	else
+		cp -r $1 $2
+	fi
+}
+
+
+### check Parameters
+while getopts "dc:p:r" o; do
+	case "${o}" in
+		d)
+			debug=true
+			;;
+		c)
+			color=${OPTARG}
+			;;
+		p)	outdir=${OPTARG}
+			;;
+		r)
+			delete=true
+			;;
+		*)
+			usage
+			;;
+	esac
+done
+shift $((OPTIND-1))
+
+
+## Change dir to script path
+cur_path=$(dirname "$0")
+if [ -z "$cur_path" ] ; then
+	echo "Path of $0 not accessible!"
+	exit 1
+else
+	cd $cur_path
+fi
+
+
+## Profit
+# check outdir
+if [ -z $outdir ]; then
+	usage "OutputPath is empty!"
+elif [[ ! -e $outdir ]]; then
+	mkdir -p $outdir
+elif [[ ! -d $outdir ]]; then
+	usage "$outdir already exists but is not a directory"
+fi
+
+# remove content of outdir
+if [ $delete ]; then
+	if [ $debug ]; then
+		echo "Cleaning $outdir"
+		rm -rfv $outdir/*
+	else
+		rm -rf $outdir/*
+	fi
+fi
+
+# copy files
+if [ $color == "light" ]; then
+	copy "../light/*" "$outdir"
+elif [ $color == "dark" ]; then
+	copy "../light/*" "$outdir"
+	copy "../dark/*" "$outdir"
+else
+	usage "No Color was set!"
+fi
