@@ -1,0 +1,112 @@
+#!/bin/bash
+
+# SVG2PNG
+# To use this you need to have librsvg and imagemagick installed.
+
+
+
+## Config ##
+WIDTH=250
+
+
+
+## Usage Message ##
+function usage {
+	echo "########## CleanUp ##########" 1>&2
+	if [ ! -z "${1}" ]; then
+		echo "ERROR: $1" 1>&2
+	fi
+	echo "Usage: $0 [-i <input>] [-o <output>] [-w <width>] [-d <debug>]" 1>&2
+	echo "#############################" 1>&2
+	exit 1
+}
+
+
+
+## check Parameters ##
+while getopts "di:o:w:" o; do
+	case "${o}" in
+		d)
+			debug=true
+			;;
+		i)
+			INPUT_DIR=$(readlink -e ${OPTARG})
+			;;
+		o)	OUTPUT_DIR=${OPTARG}
+			;;
+		w)
+			WIDTH=${OPTARG}
+			;;
+		*)
+			usage
+			;;
+	esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${INPUT_DIR}" ] || [ -z "${OUTPUT_DIR}" ]; then
+	usage "Function or Path missing!"
+fi
+
+
+
+## check DIR ##
+if [ -z $INPUT_DIR ]; then
+	usage "$INPUT_DIR is empty!"
+elif [[ ! -e $OUTPUT_DIR ]]; then
+	mkdir -p $OUTPUT_DIR
+elif [[ ! -d $OUTPUT_DIR ]]; then
+	usage "$OUTPUT_DIR already exists but is not a directory"
+fi
+
+OUTPUT_DIR=$(readlink -e $OUTPUT_DIR)
+
+
+
+## Do not change ##
+WORKDIR=$(echo '/tmp/')$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)
+mkdir -p $WORKDIR && cd $WORKDIR
+SUBDIR=$( ls -1p | grep / | sed 's/\///g' )
+
+
+# Copy and resize .png files
+cd "$INPUT_DIR"
+mogrify -path "$OUTPUT_DIR" -auto-orient -thumbnail "$WIDTH"x *.png
+#rsync -zarv  --include "*/" --exclude="*" --include="*.png" "$INPUT_DIR" "$OUTPUT_DIR"
+
+# Convert .svg to .png
+for file in *.svg; do
+ pngname="$(basename "$file" .svg).png"
+ rsvg-convert --keep-aspect-ratio --width=$WIDTH "$file" --output="$OUTPUT_DIR/$pngname"
+ #echo "Converted $file to $pngname"
+done
+
+
+
+## Subdirs ##
+IFS=$'\n'
+for prefix in ${SUBDIR[@]}; do
+  cd "$INPUT_DIR/$prefix";
+  # Copy, rename and resize .png files
+  if file --mime-type --dereference * | grep -q png$; then
+    for filename in *; do
+      OUTFILE=$( echo -e "$OUTPUT_DIR"/"$prefix"_"$filename" )
+      convert "$filename" -resize "$WIDTH" "$OUTFILE"
+    done
+  # Rename and Convert .svg to .png
+  elif file --mime-type --dereference * | grep -q svg$; then
+    for filename in *; do
+      pngname="$(basename "$filename" .svg).png"
+      OUTFILE=$( echo -e "$OUTPUT_DIR"/"$prefix"_"$pngname" )
+      rsvg-convert --keep-aspect-ratio --width=$WIDTH "$filename" --output="$OUTFILE"
+    done
+  fi
+done
+
+
+
+## CleanUp ##
+rmdir $WORKDIR
+
+
+exit 0
