@@ -1,0 +1,71 @@
+#!/bin/bash
+
+
+## Usage Message ##
+function usage {
+	echo "########## download ##########" 1>&2
+	if [ ! -z "${1}" ]; then
+		echo "ERROR: $1" 1>&2
+	fi
+	echo "Usage: $0 [-c <light|dark>] [-o <output>] [-C <Clean>]" 1>&2
+	echo "##############################" 1>&2
+	exit 1
+}
+
+
+## check Parameters ##
+while getopts "Cc:o:" o; do
+	case "${o}" in
+		C)
+			Clean=true
+			;;
+		c)
+			COLOR=${OPTARG}
+			;;
+		o)	OUTPUT_DIR=${OPTARG}
+			;;
+		*)
+			usage
+			;;
+	esac
+done
+shift $((OPTIND-1))
+
+
+if [ -z "${COLOR}" ] || [ -z "${OUTPUT_DIR}" ]; then
+	usage "Function or Path missing!"
+elif [[ ! $COLOR =~ ^(light|dark)$ ]]; then
+	usage "Wrong Color! Should be 'light' or 'dark'"
+fi
+
+
+## check DIR ##
+if [[ ! -e $OUTPUT_DIR ]]; then
+	mkdir -p $OUTPUT_DIR
+elif [[ ! -d $OUTPUT_DIR ]]; then
+	usage "$OUTPUT_DIR already exists but is not a directory"
+fi
+
+OUTPUT_DIR=$(readlink -e $OUTPUT_DIR)
+
+
+## doIt ##
+# Clean -> delete content of OUTPUT_DIR
+if [ $Clean ] && [ ! -z "$(ls -A $OUTPUT_DIR)" ]; then
+	find $OUTPUT_DIR/ -type f,d -delete
+fi
+
+# download, extract and convert
+TEMP_DIR="$OUTPUT_DIR/tmp.$RANDOM"
+if [[ ! -e $TEMP_DIR ]]; then
+	mkdir -p $TEMP_DIR
+fi
+wget --quiet --backups -P $TEMP_DIR https://github.com/lapicidae/svg-channellogos/archive/master.tar.gz
+tar -xzf $TEMP_DIR/master.tar.gz -C $TEMP_DIR --strip 1
+bash -c "$TEMP_DIR/tools/install -c $COLOR -p $TEMP_DIR/new"
+bash -c "$TEMP_DIR/tools/svg2png -i $TEMP_DIR/new -o $OUTPUT_DIR"
+rm -rf $TEMP_DIR
+
+
+
+exit 0
