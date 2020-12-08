@@ -12,7 +12,7 @@ WIDTH=250
 
 ## Usage Message ##
 function usage {
-	echo "########## CleanUp ##########" 1>&2
+	echo "########## svg2png ##########" 1>&2
 	if [ ! -z "${1}" ]; then
 		echo "ERROR: $1" 1>&2
 	fi
@@ -66,19 +66,24 @@ OUTPUT_DIR=$(readlink -e $OUTPUT_DIR)
 ## Do not change ##
 WORKDIR=$(echo '/tmp/')$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)
 mkdir -p $WORKDIR && cd $WORKDIR
-SUBDIR=$( ls -1p | grep / | sed 's/\///g' )
+SUBDIR=$( ls -1p $INPUT_DIR | grep / | sed 's/\///g' )
+cd "$INPUT_DIR"
 
 
 # Copy and resize .png files
-cd "$INPUT_DIR"
-mogrify -path "$OUTPUT_DIR" -auto-orient -thumbnail "$WIDTH"x *.png
-#rsync -zarv  --include "*/" --exclude="*" --include="*.png" "$INPUT_DIR" "$OUTPUT_DIR"
+pngfile=`ls -1 *.png 2>/dev/null | wc -l`
+if [ $pngfile != 0 ]; then
+	mogrify -path "$OUTPUT_DIR" -auto-orient -thumbnail "$WIDTH"x *.png
+fi
+
 
 # Convert .svg to .png
 for file in *.svg; do
- pngname="$(basename "$file" .svg).png"
- rsvg-convert --keep-aspect-ratio --width=$WIDTH "$file" --output="$OUTPUT_DIR/$pngname"
- #echo "Converted $file to $pngname"
+	pngname="$(basename "$file" .svg).png"
+	rsvg-convert --keep-aspect-ratio --width=$WIDTH "$file" --output="$OUTPUT_DIR/$pngname"
+	if [ $debug ]; then
+		echo "Converted $file to $pngname"
+	fi
 done
 
 
@@ -86,21 +91,26 @@ done
 ## Subdirs ##
 IFS=$'\n'
 for prefix in ${SUBDIR[@]}; do
-  cd "$INPUT_DIR/$prefix";
-  # Copy, rename and resize .png files
-  if file --mime-type --dereference * | grep -q png$; then
-    for filename in *; do
-      OUTFILE=$( echo -e "$OUTPUT_DIR"/"$prefix"_"$filename" )
-      convert "$filename" -resize "$WIDTH" "$OUTFILE"
-    done
-  # Rename and Convert .svg to .png
-  elif file --mime-type --dereference * | grep -q svg$; then
-    for filename in *; do
-      pngname="$(basename "$filename" .svg).png"
-      OUTFILE=$( echo -e "$OUTPUT_DIR"/"$prefix"_"$pngname" )
-      rsvg-convert --keep-aspect-ratio --width=$WIDTH "$filename" --output="$OUTFILE"
-    done
-  fi
+	cd "$INPUT_DIR/$prefix";
+	for filename in *; do
+		case $(file --mime-type -b "$filename") in
+			image/png)	# Copy, rename and resize .png files
+				OUTFILE=$( echo -e "$OUTPUT_DIR"/"$prefix"_"$filename" )
+				convert "$filename" -resize "$WIDTH" "$OUTFILE"
+				if [ $debug ]; then
+					echo "Converted $prefix/$filename to $prefix"_"$filename"
+				fi
+			;;
+			image/svg+xml)	# Rename and Convert .svg to .png
+				pngname="$(basename "$filename" .svg).png"
+				OUTFILE=$( echo -e "$OUTPUT_DIR"/"$prefix"_"$pngname" )
+				rsvg-convert --keep-aspect-ratio --width=$WIDTH "$filename" --output="$OUTFILE"
+				if [ $debug ]; then
+					echo "Converted $prefix/$filename to $prefix"_"$pngname"
+				fi
+			;;
+		esac
+	done
 done
 
 
