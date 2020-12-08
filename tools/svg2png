@@ -101,7 +101,7 @@ for prefix in ${SUBDIR[@]}; do
 					echo "Converted $prefix/$filename to $prefix"_"$filename"
 				fi
 			;;
-			image/svg+xml)	# Rename and Convert .svg to .png
+			image/svg*)	# Rename and Convert .svg to .png
 				pngname="$(basename "$filename" .svg).png"
 				OUTFILE=$( echo -e "$OUTPUT_DIR"/"$prefix"_"$pngname" )
 				rsvg-convert --keep-aspect-ratio --width=$WIDTH "$filename" --output="$OUTFILE"
