@@ -1,0 +1,17 @@
+#!/bin/sh
+
+## Settings ##
+TMP_DIR="/tmp"
+OUT_DIR="/channellogos"
+COLOR="light"	# light | dark
+
+
+#Download file using wget
+wget --quiet -N -P $TMP_DIR  https://github.com/lapicidae/svg-channellogos/raw/master/tools/download
+
+#Execute the file
+chmod +x $TMP_DIR/download
+bash -c "$TMP_DIR/download -o $OUT_DIR -c $COLOR -C"
+#chown -R nobody:users $OUT_DIR
+
+exit 0
