@@ -1,2 +1,3 @@
 # Fonts
 Roadkill W00 Regular	->	Babestation24	(not Exact)
+Sky Text, Normal	->	Sky (germany)
