@@ -4,7 +4,7 @@
    height="140"
    version="1.1"
    id="svg16"
-   sodipodi:docname="rtl_1.svg"
+   sodipodi:docname="rtl_5.svg"
    inkscape:version="1.1 (c4e8f9ed74, 2021-05-24)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -23,34 +23,36 @@
      showgrid="false"
      inkscape:current-layer="g14" />
   <g
-     transform="scale(.8)"
+     transform="scale(0.8)"
      id="g14">
     <path
-       d="M0 0h312.8v175H0z"
+       d="M 0,0 H 312.8 V 175 H 0 Z"
        fill="#ff5c01"
-       id="path2" />
+       id="path2"
+       style="fill:#edc00b;fill-opacity:1" />
     <path
-       d="M184.2 100.1c21-4 28.7-15.9 28.7-29.9 0-8.7-2.9-16.5-10.2-22.2s-19.1-9.2-36.8-9.2H89.5v94.8h22.3v-32h43.6l37.8 32h30.5zm-72.5-16.3V57.2h57.1c16.1 0 21.7 6 21.7 13.3 0 3.7-1.2 7-4.5 9.4s-8.7 3.9-17.3 3.9z"
+       d="m 184.2,100.1 c 21,-4 28.7,-15.9 28.7,-29.9 0,-8.7 -2.9,-16.5 -10.2,-22.2 -7.3,-5.7 -19.1,-9.2 -36.8,-9.2 H 89.5 v 94.8 h 22.3 v -32 h 43.6 l 37.8,32 h 30.5 z M 111.7,83.8 V 57.2 h 57.1 c 16.1,0 21.7,6 21.7,13.3 0,3.7 -1.2,7 -4.5,9.4 -3.3,2.4 -8.7,3.9 -17.3,3.9 z"
        fill-rule="evenodd"
-       fill="#fff"
+       fill="#ffffff"
        id="path4" />
     <path
-       d="M343.6 0h312.8v175H343.6z"
+       d="M 343.6,0 H 656.4 V 175 H 343.6 Z"
        fill="#d4000e"
-       id="path6" />
+       id="path6"
+       style="fill:#ff5c01;fill-opacity:1" />
     <path
-       d="M489 58.2h-54.7V38.8h131.6v19.4h-54.6v75.4H489z"
+       d="M 489,58.2 H 434.3 V 38.8 h 131.6 v 19.4 h -54.6 v 75.4 H 489 Z"
        fill-rule="evenodd"
-       fill="#fff"
+       fill="#ffffff"
        id="path8" />
     <path
-       d="M687.2 0H1000v175H687.2z"
+       d="M 687.2,0 H 1000 V 175 H 687.2 Z"
        fill="#6e0ced"
        id="path10" />
     <path
-       d="M806.7 116h96v17.6H784.5V38.8h22.2z"
+       d="m 806.7,116 h 96 v 17.6 H 784.5 V 38.8 h 22.2 z"
        fill-rule="evenodd"
-       fill="#fff"
+       fill="#ffffff"
        id="path12" />
   </g>
 </svg>
