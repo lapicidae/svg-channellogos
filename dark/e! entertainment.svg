@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="139.599" height="450"><path d="M11.61 450h116.118v-97.2H11.61zM137.358 62.514L139.599 0H0l11.664 324.108h116.298l2.241-59.274h-55.53V181.53h58.41l1.971-54.738H75.528V62.514z" fill="#151515" fill-rule="evenodd"/></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg class="nav-bar__brand-img" width="136.68" height="450" version="1.1" viewBox="0 0 136.68 450" xmlns="http://www.w3.org/2000/svg">
+ <path d="m11.369 450h113.68v-97.202h-113.68z" fill="#bc2a9b" fill-rule="evenodd" stroke-width="6.2126" data-darkreader-inline-fill=""/>
+ <path d="m0 0 11.419 324.11h113.87l2.1992-59.28h-54.372v-83.292h57.193l1.9321-54.733h-58.292v-64.294h60.548l2.1806-62.511z" fill="#151515" fill-rule="evenodd" stroke-width="6.2126" data-darkreader-inline-fill=""/>
+</svg>
