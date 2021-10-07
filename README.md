@@ -4,14 +4,17 @@ SVG TV &amp; Radio Logos.<br/>
 Primarily for German, Swiss and Austrian Channels on Astra 19.2°E.<br/>
 
 ## Sources
-https://github.com/picons/picons<br/>
-https://github.com/FrodoVDR/channellogos<br/>
-https://wikipedia.org<br/>
+[PICONS](https://github.com/picons/picons)<br/>
+[FrodoVDR](https://github.com/FrodoVDR/channellogos)<br/>
+[Wikipedia](https://wikipedia.org)<br/>
+[Logopedia](https://logos.fandom.com/wiki/Logopedia)<br/>
 Company Websites<br/>
 
 ## Utilities
-https://inkscape.org<br/>
-https://jakearchibald.github.io/svgomg<br/>
+[Inkscape](https://inkscape.org)<br/>
+[SVGOMG](https://jakearchibald.github.io/svgomg)<br/>
+[Scour](https://github.com/scour-project/scour)<br/>
 
 ## HowTo
 ToDo...
+
