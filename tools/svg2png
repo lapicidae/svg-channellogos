@@ -16,7 +16,7 @@ function usage {
 	if [ ! -z "${1}" ]; then
 		echo "ERROR: $1" 1>&2
 	fi
-	echo "Usage: $0 [-i <input>] [-o <output>] [-w <width>] [-d <debug>]" 1>&2
+	echo "Usage: $0 [-i <input dir>] [-o <output dir>] [-w <width>] [-f <fixed format>] [-d <debug>]" 1>&2
 	echo "#############################" 1>&2
 	exit 1
 }
@@ -24,7 +24,7 @@ function usage {
 
 
 ## check Parameters ##
-while getopts "di:o:w:" o; do
+while getopts "di:o:w:h:f" o; do
 	case "${o}" in
 		d)
 			debug=true
@@ -37,6 +37,12 @@ while getopts "di:o:w:" o; do
 		w)
 			WIDTH=${OPTARG}
 			;;
+		h)
+			HEIGHT=${OPTARG}
+			;;
+		f)
+			FIXED=true
+			;;
 		*)
 			usage
 			;;
@@ -46,6 +52,14 @@ shift $((OPTIND-1))
 
 if [ -z "${INPUT_DIR}" ] || [ -z "${OUTPUT_DIR}" ]; then
 	usage "Function or Path missing!"
+fi
+
+
+
+## width & height ##
+if [ -z ${HEIGHT} ] && [ $FIXED ] ; then
+	echo "height not set - using $WIDTH px"
+	HEIGHT=$WIDTH
 fi
 
 
@@ -64,10 +78,14 @@ OUTPUT_DIR=$(readlink -e $OUTPUT_DIR)
 
 
 ## Do not change ##
-WORKDIR=$(echo '/tmp/')$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)
+FORMAT=$( echo -e "$WIDTH"x"$HEIGHT" )
+WORKDIR=$(echo '/tmp/svg2png_')$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)
 mkdir -p $WORKDIR && cd $WORKDIR
 SUBDIR=$( ls -1p $INPUT_DIR | grep / | sed 's/\///g' )
 cd "$INPUT_DIR"
+
+
+trap 'echo oh, I am slain; exit 130' INT
 
 
 # Copy and resize .png files
@@ -80,7 +98,11 @@ fi
 # Convert .svg to .png
 for file in *.svg; do
 	pngname="$(basename "$file" .svg).png"
-	rsvg-convert --keep-aspect-ratio --width=$WIDTH "$file" --output="$OUTPUT_DIR/$pngname"
+	if [ $FIXED ] ; then
+		convert -density 500 -background none "$file" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTPUT_DIR/$pngname"
+	else
+		rsvg-convert --keep-aspect-ratio --width=$WIDTH "$file" --output="$OUTPUT_DIR/$pngname"
+	fi
 	if [ $debug ]; then
 		echo "Converted $file to $pngname"
 	fi
@@ -104,7 +126,11 @@ for prefix in ${SUBDIR[@]}; do
 			image/svg*)	# Rename and Convert .svg to .png
 				pngname="$(basename "$filename" .svg).png"
 				OUTFILE=$( echo -e "$OUTPUT_DIR"/"$prefix"_"$pngname" )
-				rsvg-convert --keep-aspect-ratio --width=$WIDTH "$filename" --output="$OUTFILE"
+				if [ $FIXED ] ; then
+					convert -density 500 -background none "$filename" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTFILE"
+				else
+					rsvg-convert --keep-aspect-ratio --width=$WIDTH "$filename" --output="$OUTFILE"
+				fi
 				if [ $debug ]; then
 					echo "Converted $prefix/$filename to $prefix"_"$pngname"
 				fi
