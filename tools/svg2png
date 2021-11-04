@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # SVG2PNG
-# To use this you need to have librsvg and imagemagick installed.
+# To use this you need to have awk, librsvg and imagemagick installed.
 
 
 
@@ -16,7 +16,7 @@ function usage {
 	if [ ! -z "${1}" ]; then
 		echo "ERROR: $1" 1>&2
 	fi
-	echo "Usage: $0 [-i <input dir>] [-o <output dir>] [-w <width>] [-f <fixed format>] [-d <debug>]" 1>&2
+	echo "Usage: $0 [-i <input dir>] [-o <output dir>] [-w <width>] [-r <fixed rectangle>] [-s <fixed square>] [-d <debug>]" 1>&2
 	echo "#############################" 1>&2
 	exit 1
 }
@@ -24,7 +24,7 @@ function usage {
 
 
 ## check Parameters ##
-while getopts "di:o:w:h:f" o; do
+while getopts "di:o:w:h:rs" o; do
 	case "${o}" in
 		d)
 			debug=true
@@ -40,8 +40,13 @@ while getopts "di:o:w:h:f" o; do
 		h)
 			HEIGHT=${OPTARG}
 			;;
-		f)
+		r)
 			FIXED=true
+			SQUARE=false
+			;;
+		s)
+			FIXED=true
+			SQUARE=true
 			;;
 		*)
 			usage
@@ -57,9 +62,12 @@ fi
 
 
 ## width & height ##
-if [ -z ${HEIGHT} ] && [ $FIXED ] ; then
-	echo "height not set - using $WIDTH px"
+if [ -z ${HEIGHT} ] && [ $FIXED = true ] && [ $SQUARE = true ]; then
 	HEIGHT=$WIDTH
+	echo "Square Format (W x H): $WIDTH x $HEIGHT px"
+elif [ -z ${HEIGHT} ] && [ $FIXED = true ] && [ $SQUARE = false ] ; then
+	HEIGHT=$(awk -v wdth="$WIDTH" 'BEGIN {printf ("%d\n", wdth/(16/9))}')
+	echo "Rectangle Format (W x H): $WIDTH x $HEIGHT px"
 fi
 
 
