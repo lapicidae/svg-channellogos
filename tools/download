@@ -7,14 +7,14 @@ function usage {
 	if [ ! -z "${1}" ]; then
 		echo "ERROR: $1" 1>&2
 	fi
-	echo "Usage: $0 [-c <light|dark>] [-o <output>] [-C <Clean>]" 1>&2
+	echo "Usage: $0 [-c <light|dark>] [-o <output>] [-f <rectangle|square>] [-w <width>] [-C <Clean>]" 1>&2
 	echo "##############################" 1>&2
 	exit 1
 }
 
 
 ## check Parameters ##
-while getopts "Cc:o:" o; do
+while getopts "Cc:o:w:rs" o; do
 	case "${o}" in
 		C)
 			Clean=true
@@ -23,6 +23,13 @@ while getopts "Cc:o:" o; do
 			COLOR=${OPTARG}
 			;;
 		o)	OUTPUT_DIR=${OPTARG}
+			;;
+		w)
+			WIDTH=${OPTARG}
+			;;
+		f)
+			FIXED=true
+			FORMAT=${OPTARG}
 			;;
 		*)
 			usage
@@ -49,6 +56,23 @@ fi
 OUTPUT_DIR=$(readlink -e $OUTPUT_DIR)
 
 
+## Options ##
+if [ $FIXED ]; then
+	if [ $FORMAT = "rectangle" ]; then
+		OPTIONS="-r"
+	elif  [ $FORMAT = "square" ]; then
+		OPTIONS="-s"
+	else
+		usage "Wrong Format! Should be 'rectangle' or 'square'"
+	fi
+	if [ ! -z $WIDTH ]; then
+		OPTIONS+=" -w $WIDTH"
+	fi
+elif [ ! -z $WIDTH ]; then
+	OPTIONS="-w $WIDTH"
+fi
+
+
 ## doIt ##
 # Clean -> delete content of OUTPUT_DIR
 if [ $Clean ] && [ ! -z "$(ls -A $OUTPUT_DIR)" ]; then
@@ -63,7 +87,7 @@ fi
 wget --quiet --backups -P $TEMP_DIR https://github.com/lapicidae/svg-channellogos/archive/master.tar.gz
 tar -xzf $TEMP_DIR/master.tar.gz -C $TEMP_DIR --strip 1
 bash -c "$TEMP_DIR/tools/install -c $COLOR -p $TEMP_DIR/new"
-bash -c "$TEMP_DIR/tools/svg2png -i $TEMP_DIR/new -o $OUTPUT_DIR"
+bash -c "$TEMP_DIR/tools/svg2png -i $TEMP_DIR/new -o $OUTPUT_DIR $OPTIONS"
 rm -rf $TEMP_DIR
 
 

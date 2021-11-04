@@ -6,7 +6,7 @@
 
 
 ## Config ##
-WIDTH=250
+WIDTH=800
 
 
 
@@ -36,9 +36,6 @@ while getopts "di:o:w:h:rs" o; do
 			;;
 		w)
 			WIDTH=${OPTARG}
-			;;
-		h)
-			HEIGHT=${OPTARG}
 			;;
 		r)
 			FIXED=true
