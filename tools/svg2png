@@ -61,10 +61,14 @@ fi
 ## width & height ##
 if [ -z ${HEIGHT} ] && [ $FIXED = true ] && [ $SQUARE = true ]; then
 	HEIGHT=$WIDTH
-	echo "Square Format (W x H): $WIDTH x $HEIGHT px"
+	if [ $debug ]; then
+		echo "Square Format (W x H): $WIDTH x $HEIGHT px"
+	fi
 elif [ -z ${HEIGHT} ] && [ $FIXED = true ] && [ $SQUARE = false ] ; then
 	HEIGHT=$(awk -v wdth="$WIDTH" 'BEGIN {printf ("%d\n", wdth/(16/9))}')
-	echo "Rectangle Format (W x H): $WIDTH x $HEIGHT px"
+	if [ $debug ]; then
+		echo "Rectangle Format (W x H): $WIDTH x $HEIGHT px"
+	fi
 fi
 
 
