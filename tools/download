@@ -1,6 +1,11 @@
 #!/bin/bash
 
 
+## Defauls ##
+Clean="false"
+FIXED="false"
+
+
 ## Usage Message ##
 function usage {
 	echo "########## download ##########" 1>&2
@@ -17,7 +22,7 @@ function usage {
 while getopts "Cc:o:w:f:" o; do
 	case "${o}" in
 		C)
-			Clean=true
+			Clean="true"
 			;;
 		c)
 			COLOR=${OPTARG}
@@ -28,7 +33,7 @@ while getopts "Cc:o:w:f:" o; do
 			WIDTH=${OPTARG}
 			;;
 		f)
-			FIXED=true
+			FIXED="true"
 			FORMAT=${OPTARG}
 			;;
 		*)
@@ -57,7 +62,7 @@ OUTPUT_DIR=$(readlink -e $OUTPUT_DIR)
 
 
 ## Options ##
-if [ $FIXED ]; then
+if [ $FIXED = "true" ]; then
 	if [ $FORMAT = "rectangle" ]; then
 		OPTIONS="-r"
 	elif  [ $FORMAT = "square" ]; then
@@ -75,21 +80,14 @@ fi
 
 ## doIt ##
 # Clean -> delete content of OUTPUT_DIR
-if [ $Clean ] && [ ! -z "$(ls -A $OUTPUT_DIR)" ]; then
+if [ $Clean = "true" ] && [ ! -z "$(ls -A $OUTPUT_DIR)" ]; then
 	find $OUTPUT_DIR/ -type f,d -delete
 fi
 
 # download, extract and convert
-TEMP_DIR="$OUTPUT_DIR/tmp.$RANDOM"
-if [[ ! -e $TEMP_DIR ]]; then
-	mkdir -p $TEMP_DIR
-fi
-wget --quiet --backups -P $TEMP_DIR https://github.com/lapicidae/svg-channellogos/archive/master.tar.gz
-tar -xzf $TEMP_DIR/master.tar.gz -C $TEMP_DIR --strip 1
+TEMP_DIR=$(mktemp -d --suffix=_logodown)
+wget --quiet --backups -P "$TEMP_DIR" "https://github.com/lapicidae/svg-channellogos/archive/master.tar.gz"
+tar -xzf "$TEMP_DIR/master.tar.gz" -C "$TEMP_DIR" --strip 1
 bash -c "$TEMP_DIR/tools/install -c $COLOR -p $TEMP_DIR/new"
 bash -c "$TEMP_DIR/tools/svg2png -i $TEMP_DIR/new -o $OUTPUT_DIR $OPTIONS"
 rm -rf $TEMP_DIR
-
-
-
-exit 0

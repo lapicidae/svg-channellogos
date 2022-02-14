@@ -8,6 +8,12 @@
 ## Config ##
 WIDTH=800
 
+## Defaults ##
+OVERWRITE="false"
+FIXED="false"
+SQUARE="false"
+debug="false"
+
 
 
 ## Usage Message ##
@@ -16,7 +22,7 @@ function usage {
 	if [ ! -z "${1}" ]; then
 		echo "ERROR: $1" 1>&2
 	fi
-	echo "Usage: $0 [-i <input dir>] [-o <output dir>] [-w <width>] [-r <fixed rectangle>] [-s <fixed square>] [-d <debug>]" 1>&2
+	echo "Usage: $0 [-i <input dir>] [-o <output dir>] [-w <width>] [-r <fixed rectangle>] [-s <fixed square>] [-f <overwrite>] [-d <debug>]" 1>&2
 	echo "#############################" 1>&2
 	exit 1
 }
@@ -24,10 +30,10 @@ function usage {
 
 
 ## check Parameters ##
-while getopts "di:o:w:h:rs" o; do
+while getopts "di:o:w:h:rsf" o; do
 	case "${o}" in
 		d)
-			debug=true
+			debug="true"
 			;;
 		i)
 			INPUT_DIR=$(readlink -e ${OPTARG})
@@ -38,12 +44,15 @@ while getopts "di:o:w:h:rs" o; do
 			WIDTH=${OPTARG}
 			;;
 		r)
-			FIXED=true
-			SQUARE=false
+			FIXED="true"
+			SQUARE="false"
 			;;
 		s)
-			FIXED=true
-			SQUARE=true
+			FIXED="true"
+			SQUARE="true"
+			;;
+		f)
+			OVERWRITE="true"
 			;;
 		*)
 			usage
@@ -52,21 +61,21 @@ while getopts "di:o:w:h:rs" o; do
 done
 shift $((OPTIND-1))
 
-if [ -z "${INPUT_DIR}" ] || [ -z "${OUTPUT_DIR}" ]; then
+if [ -z "$INPUT_DIR" ] || [ -z "$OUTPUT_DIR" ]; then
 	usage "Function or Path missing!"
 fi
 
 
 
 ## width & height ##
-if [ -z ${HEIGHT} ] && [ $FIXED = true ] && [ $SQUARE = true ]; then
+if [ -z ${HEIGHT} ] && [ $FIXED = "true" ] && [ $SQUARE = "true" ]; then
 	HEIGHT=$WIDTH
-	if [ $debug ]; then
+	if [ $debug = "true" ]; then
 		echo "Square Format (W x H): $WIDTH x $HEIGHT px"
 	fi
-elif [ -z ${HEIGHT} ] && [ $FIXED = true ] && [ $SQUARE = false ] ; then
+elif [ -z ${HEIGHT} ] && [ $FIXED = "true" ] && [ $SQUARE = "false" ] ; then
 	HEIGHT=$(awk -v wdth="$WIDTH" 'BEGIN {printf ("%d\n", wdth/(16/9))}')
-	if [ $debug ]; then
+	if [ $debug = "true" ]; then
 		echo "Rectangle Format (W x H): $WIDTH x $HEIGHT px"
 	fi
 fi
@@ -74,46 +83,57 @@ fi
 
 
 ## check DIR ##
-if [ -z $INPUT_DIR ]; then
+if [ -z "$INPUT_DIR" ]; then
 	usage "$INPUT_DIR is empty!"
-elif [[ ! -e $OUTPUT_DIR ]]; then
-	mkdir -p $OUTPUT_DIR
-elif [[ ! -d $OUTPUT_DIR ]]; then
+elif [ ! -e "$OUTPUT_DIR" ]; then
+	mkdir -p "$OUTPUT_DIR"
+elif [ ! -d "$OUTPUT_DIR" ]; then
 	usage "$OUTPUT_DIR already exists but is not a directory"
 fi
 
-OUTPUT_DIR=$(readlink -e $OUTPUT_DIR)
+OUTPUT_DIR=$(readlink -e "$OUTPUT_DIR")
 
 
 
 ## Do not change ##
-FORMAT=$( echo -e "$WIDTH"x"$HEIGHT" )
-WORKDIR=$(echo '/tmp/svg2png_')$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)
-mkdir -p $WORKDIR && cd $WORKDIR
-SUBDIR=$( ls -1p $INPUT_DIR | grep / | sed 's/\///g' )
-cd "$INPUT_DIR"
+FORMAT=$(echo -e "$WIDTH"x"$HEIGHT")
+WORKDIR=$(mktemp -d --suffix=_svg2png)
+SUBDIR=$( ls -1p "$INPUT_DIR" | grep / | sed 's/\///g' )
+cd "$WORKDIR"
 
 
 trap 'echo oh, I am slain; exit 130' INT
 
 
 # Copy and resize .png files
-pngfile=`ls -1 *.png 2>/dev/null | wc -l`
+pngfile=`ls -1 "$INPUT_DIR"/*.png 2>/dev/null | wc -l`
 if [ $pngfile != 0 ]; then
-	mogrify -path "$OUTPUT_DIR" -auto-orient -thumbnail "$WIDTH"x *.png
+	mogrify -path "$OUTPUT_DIR" -auto-orient -thumbnail "$WIDTH"x "$INPUT_DIR"/*.png
 fi
 
 
 # Convert .svg to .png
-for file in *.svg; do
+for file in "$INPUT_DIR"/*.svg; do
 	pngname="$(basename "$file" .svg).png"
-	if [ $FIXED ] ; then
-		convert -density 500 -background none "$file" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTPUT_DIR/$pngname"
+	if [ ! -f "$OUTPUT_DIR/$pngname" ] || [ $OVERWRITE = "true" ]; then
+		if [ -L "$file" ] && [ -f "$file" ]; then
+			cd "$OUTPUT_DIR"
+			destination="$(basename "$(readlink "$file")" .svg).png"
+			if [ ! -f "$destination" ]; then
+				ln -s "$destination" "$pngname"
+			fi
+		elif [ $FIXED = "true" ]; then
+			convert -density 500 -background none "$file" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTPUT_DIR/$pngname"
+		else
+			rsvg-convert --keep-aspect-ratio --width=$WIDTH "$file" --output="$OUTPUT_DIR/$pngname"
+		fi
+		if [ $debug = "true" ]; then
+			echo "Converted or linked $file to $pngname"
+		fi
 	else
-		rsvg-convert --keep-aspect-ratio --width=$WIDTH "$file" --output="$OUTPUT_DIR/$pngname"
-	fi
-	if [ $debug ]; then
-		echo "Converted $file to $pngname"
+		if [ $debug = "true" ]; then
+			echo "$pngname already exists!"
+		fi
 	fi
 done
 
@@ -122,26 +142,26 @@ done
 ## Subdirs ##
 IFS=$'\n'
 for prefix in ${SUBDIR[@]}; do
-	cd "$INPUT_DIR/$prefix";
-	for filename in *; do
+	for filename in "$INPUT_DIR/$prefix"/*; do
 		case $(file --mime-type -b "$filename") in
 			image/png)	# Copy, rename and resize .png files
-				OUTFILE=$( echo -e "$OUTPUT_DIR"/"$prefix"_"$filename" )
+				OUTFILE=$(echo -e "$OUTPUT_DIR"/"$prefix"_"$filename")
 				convert "$filename" -resize "$WIDTH" "$OUTFILE"
-				if [ $debug ]; then
+				if [ $debug = "true" ]; then
 					echo "Converted $prefix/$filename to $prefix"_"$filename"
 				fi
 			;;
 			image/svg*)	# Rename and Convert .svg to .png
 				pngname="$(basename "$filename" .svg).png"
-				OUTFILE=$( echo -e "$OUTPUT_DIR"/"$prefix"_"$pngname" )
-				if [ $FIXED ] ; then
+				OUTFILE=$(echo -e "$OUTPUT_DIR"/"$prefix"_"$pngname")
+				if [ $FIXED = "true" ] ; then
 					convert -density 500 -background none "$filename" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTFILE"
 				else
 					rsvg-convert --keep-aspect-ratio --width=$WIDTH "$filename" --output="$OUTFILE"
 				fi
-				if [ $debug ]; then
+				if [ $debug = "true" ]; then
 					echo "Converted $prefix/$filename to $prefix"_"$pngname"
+					exit 0
 				fi
 			;;
 		esac
@@ -152,6 +172,3 @@ done
 
 ## CleanUp ##
 rmdir $WORKDIR
-
-
-exit 0

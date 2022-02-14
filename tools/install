@@ -21,7 +21,7 @@ function copy {
 }
 
 
-### check Parameters
+### get Parameters
 while getopts "dc:p:r" o; do
 	case "${o}" in
 		d)

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ## Settings ##
-TMP_DIR="/tmp"
+TMP_DIR=$(mktemp -d --suffix=_logocron)
 OUT_DIR="/channellogos"
 COLOR="light"	# light | dark
 FORMAT="square"	# rectangle | square
@@ -9,11 +9,11 @@ WIDTH="450"
 
 
 #Download file using wget
-wget --quiet --no-cache -N -P $TMP_DIR  https://github.com/lapicidae/svg-channellogos/raw/master/tools/download
+wget --quiet --no-cache -N -P $TMP_DIR  "https://github.com/lapicidae/svg-channellogos/raw/master/tools/download"
 
 #Execute the file
 chmod +x $TMP_DIR/download
 bash -c "$TMP_DIR/download -o $OUT_DIR -c $COLOR -w $WIDTH -f $FORMAT -C"
-#chown -R nobody:users $OUT_DIR
 
-exit 0
+#CleanUp
+rm -rf $TMP_DIR

@@ -1,0 +1,140 @@
+#!/bin/bash
+
+tmpdir=$(mktemp -d --suffix=_picon)
+slist="$tmpdir/tmp.slist"
+tmp_channels="$tmpdir/tmp.chconf"
+
+
+### Functions
+function usage {
+	echo "########## PICON ##########" 1>&2
+	echo "Link logos from the input directory [-i] to the output directory [-o] based on VDR 'channels.conf' [-c]." 1>&2
+	if [ ! -z "${1}" ]; then
+		echo "ERROR: $1" 1>&2
+	fi
+	echo "Usage: $0 [-c <channels.conf>] [-i <Input Dir>] [-o <Output Dir>] [-r <remove content of OutputPath>] [-s <silent>]" 1>&2
+	echo "#############################" 1>&2
+	exit 1
+}
+
+function prepare {
+	local input="$1"
+	local output="$2"
+
+	iconv -sc -f UTF-8 -t UTF-8 -o $output $input	# convert to utf8
+	sed -i '/^\./d' "$output"			# remove unnamed channels
+}
+
+function servicelist {
+	local input="$1"
+	local output="$2"
+
+	if [ -f "$input" ]; then
+		local tempfile="$tmpdir/tmp.servicelist"
+		grep -o '.*:.*:.*:.*:.*:.*:.*:.*:.*:.*:.*:.*:0' $input | sort -u | while read channel; do
+			local IFS=":"
+			local vdrchannel=($channel)
+			local IFS=";"
+
+			local sid=$(printf "%x\n" ${vdrchannel[9]})
+			local tid=$(printf "%x\n" ${vdrchannel[11]})
+			local nid=$(printf "%x\n" ${vdrchannel[10]})
+
+			case ${vdrchannel[3]} in
+				*"W") local namespace=$(printf "%x\n" $(sed -e 's/S//' -e 's/W//' <<< "${vdrchannel[3]}" | awk '{printf "%.0f\n", 3600-($1*10)}'));;
+				*"E") local namespace=$(printf "%x\n" $(sed -e 's/S//' -e 's/E//' <<< "${vdrchannel[3]}" | awk '{printf "%.0f\n", $1*10}'));;
+				"T") local namespace="EEEE";;
+				"C") local namespace="FFFF";;
+			esac
+			case ${vdrchannel[5]} in
+				"0") local channeltype="2";;
+				*"=2") local channeltype="1";;
+				*"=27") local channeltype="19";;
+			esac
+
+			local unique_id=$(sed -e 's/.*/\U&\E/' <<< "$sid"'_'"$tid"'_'"$nid"'_'"$namespace")
+			local serviceref='1_0_'"$channeltype"'_'"$unique_id"'0000_0_0_0'
+			local channelname=(${vdrchannel[0]})
+			local channelname=$(echo "${channelname[0]}" | sed -e 's/^[ \t]*//' -e 's/|//g' -e 's/§//g' -e 's/\//_/g' | cut -f1 -d"," | tr '[:upper:]' '[:lower:]')
+
+			echo -e "$serviceref█$channelname" >> $tempfile
+		done
+
+		sort -t $'\t' -k 2,2 -o "$output" "$tempfile"
+		rm $tempfile
+	else
+		echo "$input not found"
+	fi
+}
+
+function linkpicons {
+	local input="$1"
+	local output="$2"
+
+	cd "$output"
+
+	find "$output" -xtype l -delete		# delete broken symlinks
+
+	for FILE in "$input"/*.png; do
+		local chname=$(basename "$FILE" .png)
+		local IFS=$'\n'
+		local picon=($(grep -i "█$chname" "$slist" | sed 's/█/\'$'\t/g' | cut -f 1 | sed 's/$/.png/'))
+
+		for i in "${picon[@]}"; do
+			if [ ! -z "$i" ] && [ ! -L "$i" ]; then
+				if [ -L "$FILE" ]; then		# prevent link chains
+					FILE="$(readlink -e "$FILE")"
+				fi
+				ln -s "$FILE" "$i"
+			fi
+		done
+	done
+}
+
+
+
+### get Parameters
+while getopts "dc:i:o:" p; do
+	case "${p}" in
+		d)
+			debug="true"
+			;;
+		i)
+			LOGODIR=$(realpath "${OPTARG}")
+			;;
+		c)	CHCONF=$(realpath "${OPTARG}")
+			;;
+		o)
+			OUTDIR=$(realpath "${OPTARG}")
+			;;
+		*)
+			usage
+			;;
+	esac
+done
+
+
+
+### Check input
+if [ ! -f "$CHCONF" ]; then
+	channels_conf="$tmpdir/channels.conf"
+	curl -s "https://channelpedia.yavdr.com/gen/DVB-S/S19.2E/S19.2E_complete.channels.conf" > "$channels_conf"
+else
+	channels_conf=$CHCONF
+fi
+
+if [ -z "$LOGODIR" ] && [ ! -d "$LOGODIR" ]; then usage "Logo directory: Parameter is missing or directory does not exist!"; fi
+if [ -z "$OUTDIR" ]; then usage "Output directory: Parameter is missing!"; fi
+if [ ! -d "$OUTDIR" ]; then mkdir -p "$OUTDIR"; fi
+
+
+
+### DoIt
+prepare "$channels_conf" "$tmp_channels"
+servicelist "$tmp_channels" "$slist"
+linkpicons "$LOGODIR" "$OUTDIR"
+
+
+
+### cleanUp
+rm -rf $tmpdir
