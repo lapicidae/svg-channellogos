@@ -1,0 +1,79 @@
+name: Weekly Release
+permissions:
+  actions: write
+  contents: read
+on:
+  schedule:
+    - cron: '0 23 * * 0'
+jobs:
+  pre_job:
+    # continue-on-error: true # Uncomment once integration is finished
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v3
+        with:
+          concurrent_skipping: 'never'
+          skip_after_successful_duplicate: 'true'
+          paths: '["**.svg"]'
+  main_job:
+    name: Weekly Release
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get current year and week
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y%V')"
+      - name: Height
+        id: height
+        run: echo "::set-output name=height::$(echo | awk -v wdth="$WIDTH_WIDE" '{printf ("%d\n", wdth/(16/9))}')"
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
+      - name: Prepare
+        run: |
+          sudo apt update -qq
+          sudo apt install -yqq graphicsmagick librsvg2-bin imagemagick xz-utils
+          chmod 755 ${{ github.workspace }}/tools/*
+          mkdir -p $OUT_DIR
+      - name: Install
+        run: |
+          ${{ github.workspace }}/tools/install -c light -p /tmp/svg_light
+          ${{ github.workspace }}/tools/install -c dark -p /tmp/svg_dark
+      - name: Convert
+        run: |
+          ${{ github.workspace }}/tools/svg2png -i /tmp/svg_light -o /tmp/png_light_wide -r -w $WIDTH_WIDE -d
+          ${{ github.workspace }}/tools/svg2png -i /tmp/svg_light -o /tmp/png_light_square -s -w $WIDTH_SQUARE -d
+          ${{ github.workspace }}/tools/svg2png -i /tmp/svg_dark -o /tmp/png_dark_square -s -w $WIDTH_SQUARE -d
+          ${{ github.workspace }}/tools/svg2png -i /tmp/svg_dark -o /tmp/png_dark_wide -r -w $WIDTH_WIDE -d
+      - name: Compress
+        run: |
+          tar -cpJf $OUT_DIR/$TAR_SVG_LIGHT -C /tmp/svg_light .
+          tar -cpJf $OUT_DIR/$TAR_SVG_DARK -C /tmp/svg_dark .
+          tar -cpJf $OUT_DIR/$TAR_PNG_LIGHT_SQUARE -C /tmp/png_light_square .
+          tar -cpJf $OUT_DIR/$TAR_PNG_DARK_SQUARE -C /tmp/png_dark_square .
+          tar -cpJf $OUT_DIR/$TAR_PNG_LIGHT_WIDE -C /tmp/png_light_wide .
+          tar -cpJf $OUT_DIR/$TAR_PNG_DARK_WIDE -C /tmp/png_dark_wide .
+        env:
+          TAR_SVG_LIGHT: svg_light-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_SVG_DARK: svg_dark-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_PNG_LIGHT_SQUARE: png_light_square.${{ env.WIDTH_SQUARE }}x${{ env.WIDTH_SQUARE }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_PNG_DARK_SQUARE: png_dark_square.${{ env.WIDTH_SQUARE }}x${{ env.WIDTH_SQUARE }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_PNG_LIGHT_WIDE: png_light_wide.${{ env.WIDTH_WIDE }}x${{ steps.height.outputs.height }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_PNG_DARK_WIDE: png_dark_wide.${{ env.WIDTH_WIDE }}x${{ steps.height.outputs.height }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+      - name: Publish
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.REPO_ACCESS_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: /tmp/release/*.tar.xz
+    env:
+      OUT_DIR: /tmp/release
+      TAR_EXT: ".tar.xz"
+      WIDTH_SQUARE: 450
+      WIDTH_WIDE: 800
