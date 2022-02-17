@@ -23,6 +23,7 @@ jobs:
         with:
           concurrent_skipping: 'never'
           skip_after_successful_duplicate: 'true'
+          do_not_skip: '["workflow_dispatch"]'
           paths: '["**.svg"]'
   main_job:
     name: Weekly Release
