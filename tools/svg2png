@@ -116,6 +116,9 @@ fi
 for file in "$INPUT_DIR"/*.svg; do
 	pngname="$(basename "$file" .svg).png"
 	if [ ! -f "$OUTPUT_DIR/$pngname" ] || [ $OVERWRITE = "true" ]; then
+		if [ $debug = "true" ]; then
+			echo "Processing '$file'..."
+		fi
 		if [ -L "$file" ] && [ -f "$file" ]; then
 			cd "$OUTPUT_DIR"
 			destination="$(basename "$(readlink "$file")" .svg).png"
@@ -128,7 +131,7 @@ for file in "$INPUT_DIR"/*.svg; do
 			rsvg-convert --keep-aspect-ratio --width=$WIDTH "$file" --output="$OUTPUT_DIR/$pngname"
 		fi
 		if [ $debug = "true" ]; then
-			echo "Converted or linked $file to $pngname"
+			echo "DONE: '$pngname'"
 		fi
 	else
 		if [ $debug = "true" ]; then
