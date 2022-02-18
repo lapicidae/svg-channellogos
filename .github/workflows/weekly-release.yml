@@ -77,8 +77,8 @@ jobs:
         with:
           repo_token: "${{ secrets.REPO_ACCESS_TOKEN }}"
           automatic_release_tag: "latest"
-          prerelease: true
-          title: "Development Build"
+          prerelease: false
+          title: "Release - ${{ steps.date.outputs.date }}"
           files: /tmp/release/*.tar.xz
     env:
       OUT_DIR: /tmp/release
