@@ -112,7 +112,7 @@ if [ $pngfile != 0 ]; then
 fi
 
 
-# Convert .svg to .png
+# Convert .svg to .png and keep links
 for file in "$INPUT_DIR"/*.svg; do
 	pngname="$(basename "$file" .svg).png"
 	if [ ! -f "$OUTPUT_DIR/$pngname" ] || [ $OVERWRITE = "true" ]; then
@@ -126,7 +126,7 @@ for file in "$INPUT_DIR"/*.svg; do
 				ln -s "$destination" "$pngname"
 			fi
 		elif [ $FIXED = "true" ]; then
-			convert -density 500 -background none "$file" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTPUT_DIR/$pngname"
+			convert -density $WIDTH -background none "$file" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTPUT_DIR/$pngname" || echo "^^ ERROR converting $filename ^^"
 		else
 			rsvg-convert --keep-aspect-ratio --width=$WIDTH "$file" --output="$OUTPUT_DIR/$pngname"
 		fi
@@ -158,7 +158,7 @@ for prefix in ${SUBDIR[@]}; do
 				pngname="$(basename "$filename" .svg).png"
 				OUTFILE=$(echo -e "$OUTPUT_DIR"/"$prefix"_"$pngname")
 				if [ $FIXED = "true" ] ; then
-					convert -density 500 -background none "$filename" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTFILE"
+					convert -density $WIDTH -background none "$filename" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTFILE" || echo "^^ ERROR converting $filename ^^"
 				else
 					rsvg-convert --keep-aspect-ratio --width=$WIDTH "$filename" --output="$OUTFILE"
 				fi
