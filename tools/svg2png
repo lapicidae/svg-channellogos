@@ -126,7 +126,7 @@ for file in "$INPUT_DIR"/*.svg; do
 				ln -s "$destination" "$pngname"
 			fi
 		elif [ $FIXED = "true" ]; then
-			convert -density $WIDTH -background none "$file" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTPUT_DIR/$pngname" || echo "^^ ERROR converting $filename ^^"
+			convert -density $WIDTH -background none "$file" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTPUT_DIR/$pngname" || echo "^^ ERROR converting $file ^^"
 		else
 			rsvg-convert --keep-aspect-ratio --width=$WIDTH "$file" --output="$OUTPUT_DIR/$pngname"
 		fi
