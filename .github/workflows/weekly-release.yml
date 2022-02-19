@@ -3,6 +3,7 @@ permissions:
   actions: write
   contents: read
 on:
+  push:
   schedule:
     - cron: '0 23 * * 0'
   workflow_dispatch:
@@ -44,7 +45,7 @@ jobs:
       - name: Prepare
         run: |
           sudo apt update -qq
-          sudo apt install -yqq graphicsmagick librsvg2-bin imagemagick xz-utils
+          sudo apt install -yqq librsvg2-bin inkscape imagemagick xz-utils
           chmod 755 ${{ github.workspace }}/tools/*
           mkdir -p $OUT_DIR
       - name: Install
@@ -53,18 +54,28 @@ jobs:
           ${{ github.workspace }}/tools/install -c dark -p /tmp/svg_dark
       - name: Convert
         run: |
-          ${{ github.workspace }}/tools/svg2png -i /tmp/svg_light -o /tmp/png_light_wide -r -w $WIDTH_WIDE
-          ${{ github.workspace }}/tools/svg2png -i /tmp/svg_light -o /tmp/png_light_square -s -w $WIDTH_SQUARE
+          echo "Convert to Dark Square png..."
           ${{ github.workspace }}/tools/svg2png -i /tmp/svg_dark -o /tmp/png_dark_square -s -w $WIDTH_SQUARE
+          echo "Convert to Dark Wide png..."
           ${{ github.workspace }}/tools/svg2png -i /tmp/svg_dark -o /tmp/png_dark_wide -r -w $WIDTH_WIDE
+          echo "Convert to Light Square png..."
+          ${{ github.workspace }}/tools/svg2png -i /tmp/svg_light -o /tmp/png_light_square -s -w $WIDTH_SQUARE
+          echo "Convert to Light Wide png..."
+          ${{ github.workspace }}/tools/svg2png -i /tmp/svg_light -o /tmp/png_light_wide -r -w $WIDTH_WIDE
       - name: Compress
         run: |
-          tar -cpJf $OUT_DIR/$TAR_SVG_LIGHT -C /tmp/svg_light .
-          tar -cpJf $OUT_DIR/$TAR_SVG_DARK -C /tmp/svg_dark .
-          tar -cpJf $OUT_DIR/$TAR_PNG_LIGHT_SQUARE -C /tmp/png_light_square .
+          echo "Compress Dark Square..."
           tar -cpJf $OUT_DIR/$TAR_PNG_DARK_SQUARE -C /tmp/png_dark_square .
-          tar -cpJf $OUT_DIR/$TAR_PNG_LIGHT_WIDE -C /tmp/png_light_wide .
+          echo "Compress Dark Wide..."
           tar -cpJf $OUT_DIR/$TAR_PNG_DARK_WIDE -C /tmp/png_dark_wide .
+          echo "Compress Light Square..."
+          tar -cpJf $OUT_DIR/$TAR_PNG_LIGHT_SQUARE -C /tmp/png_light_square .
+          echo "Compress Light Wide..."
+          tar -cpJf $OUT_DIR/$TAR_PNG_LIGHT_WIDE -C /tmp/png_light_wide .
+          echo "Compress Dark svg..."
+          tar -cpJf $OUT_DIR/$TAR_SVG_DARK -C /tmp/svg_dark .
+          echo "Compress Light svg..."
+          tar -cpJf $OUT_DIR/$TAR_SVG_LIGHT -C /tmp/svg_light .
         env:
           TAR_SVG_LIGHT: svg_light-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
           TAR_SVG_DARK: svg_dark-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
