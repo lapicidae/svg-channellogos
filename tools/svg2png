@@ -14,6 +14,10 @@ FIXED="false"
 SQUARE="false"
 debug="false"
 
+## Do not change ##
+IFS=$'\n'
+trap 'echo oh, I am slain; exit 130' INT
+
 
 
 ## Usage Message ##
@@ -22,7 +26,7 @@ function usage {
 	if [ ! -z "${1}" ]; then
 		echo "ERROR: $1" 1>&2
 	fi
-	echo "Usage: $0 [-i <input dir>] [-o <output dir>] [-w <width>] [-r <fixed rectangle>] [-s <fixed square>] [-f <overwrite>] [-d <debug>]" 1>&2
+	echo "Usage: $0 [-i <input dir>] [-o <output dir>] [-w <width>] [-r <fixed rectangle>] [-s <fixed square>] [-u <unlink>] [-f <overwrite>] [-d <debug>]" 1>&2
 	echo "#############################" 1>&2
 	exit 1
 }
@@ -30,7 +34,7 @@ function usage {
 
 
 ## check Parameters ##
-while getopts "di:o:w:h:rsf" o; do
+while getopts "di:o:w:h:rsuf" o; do
 	case "${o}" in
 		d)
 			debug="true"
@@ -50,6 +54,9 @@ while getopts "di:o:w:h:rsf" o; do
 		s)
 			FIXED="true"
 			SQUARE="true"
+			;;
+		u)
+			UNLINK="true"
 			;;
 		f)
 			OVERWRITE="true"
@@ -95,14 +102,12 @@ OUTPUT_DIR=$(readlink -e "$OUTPUT_DIR")
 
 
 
-## Do not change ##
+## Variables ##
 FORMAT=$(echo -e "$WIDTH"x"$HEIGHT")
 WORKDIR=$(mktemp -d --suffix=_svg2png)
 SUBDIR=$( ls -1p "$INPUT_DIR" | grep / | sed 's/\///g' )
 cd "$WORKDIR"
 
-
-trap 'echo oh, I am slain; exit 130' INT
 
 
 # Copy and resize .png files
@@ -143,7 +148,6 @@ done
 
 
 ## Subdirs ##
-IFS=$'\n'
 for prefix in ${SUBDIR[@]}; do
 	for filename in "$INPUT_DIR/$prefix"/*; do
 		case $(file --mime-type -b "$filename") in
@@ -173,5 +177,23 @@ done
 
 
 
+## Unlink ##
+if [ ${UNLINK:="false"} = "true" ]; then
+	UNL_TMP_DIR=$(mktemp -d --tmpdir=$WORKDIR --suffix=_unlink)
+	LINKS=($(find "$OUTPUT_DIR" -type l -print))
+
+	for unlink in ${LINKS[@]}; do
+		UN_INPUT=$(readlink -e -f $unlink)
+		UN_OUTPUT=$(basename $unlink)
+		cp "$UN_INPUT" "$UNL_TMP_DIR/$UN_OUTPUT"
+	done
+
+	if [ -d "$UNL_TMP_DIR" ]; then
+		mv "$UNL_TMP_DIR"/* "$OUTPUT_DIR"
+	fi
+fi
+
+
+
 ## CleanUp ##
-rmdir $WORKDIR
+rm -rf $WORKDIR

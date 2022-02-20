@@ -14,7 +14,7 @@ on:
 jobs:
   pre_job:
     name: Skip Duplicate
-    # continue-on-error: true # Uncomment once integration is finished
+    continue-on-error: true
     runs-on: ubuntu-latest
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
@@ -49,8 +49,8 @@ jobs:
           mkdir -p $OUT_DIR
       - name: Install
         run: |
-          ${{ github.workspace }}/tools/install -c light -p /tmp/svg_light
           ${{ github.workspace }}/tools/install -c dark -p /tmp/svg_dark
+          ${{ github.workspace }}/tools/install -c light -p /tmp/svg_light
       - name: Convert
         run: |
           echo "Convert to Dark Square png..."
@@ -61,27 +61,80 @@ jobs:
           ${{ github.workspace }}/tools/svg2png -i /tmp/svg_light -o /tmp/png_light_square -s -w $WIDTH_SQUARE
           echo "Convert to Light Wide png..."
           ${{ github.workspace }}/tools/svg2png -i /tmp/svg_light -o /tmp/png_light_wide -r -w $WIDTH_WIDE
+      - name: Unlink
+        run: |
+          export UN_TEMP=$(mktemp -d)
+          echo "Copy directories..."
+          cp -ar /tmp/png_dark_square /tmp/png_dark_square_nolinks
+          cp -ar /tmp/png_dark_wide /tmp/png_dark_wide_nolinks
+          cp -ar /tmp/png_light_square /tmp/png_light_square_nolinks
+          cp -ar /tmp/png_light_wide /tmp/png_light_wide_nolinks
+          cp -ar /tmp/svg_dark /tmp/svg_dark_nolinks
+          cp -ar /tmp/svg_light /tmp/svg_light_nolinks
+          echo "Unlink Dark Square png..."
+          IN="/tmp/png_dark_square_nolinks" && \
+            find "$IN" -type l | while read l; do cp "$(readlink -e -f "$l")" "$UN_TEMP/$(basename "$l")"; done && \
+            mv "$UN_TEMP"/*.png "$IN"
+          echo "Unlink Dark Wide png..."
+          IN="/tmp/png_dark_wide_nolinks" && \
+            find "$IN" -type l | while read l; do cp "$(readlink -e -f "$l")" "$UN_TEMP/$(basename "$l")"; done && \
+            mv "$UN_TEMP"/*.png "$IN"
+          echo "Unlink Light Square png..."
+          IN="/tmp/png_light_square_nolinks" && \
+            find "$IN" -type l | while read l; do cp "$(readlink -e -f "$l")" "$UN_TEMP/$(basename "$l")"; done && \
+            mv "$UN_TEMP"/*.png "$IN"
+          echo "Unlink Light Wide png..."
+          IN="/tmp/png_light_wide_nolinks" && \
+            find "$IN" -type l | while read l; do cp "$(readlink -e -f "$l")" "$UN_TEMP/$(basename "$l")"; done && \
+            mv "$UN_TEMP"/*.png "$IN"
+          echo "Unlink Dark svg..."
+          IN="/tmp/svg_dark_nolinks" && \
+            find "$IN" -type l | while read l; do cp "$(readlink -e -f "$l")" "$UN_TEMP/$(basename "$l")"; done && \
+            mv "$UN_TEMP"/*.svg "$IN"
+          echo "Unlink Light svg..."
+          IN="/tmp/svg_light_nolinks" && \
+            find "$IN" -type l | while read l; do cp "$(readlink -e -f "$l")" "$UN_TEMP/$(basename "$l")"; done && \
+            mv "$UN_TEMP"/*.svg "$IN"
+          rm -rf $UN_TEMP
       - name: Compress
         run: |
           echo "Compress Dark Square..."
           tar -cpJf $OUT_DIR/$TAR_PNG_DARK_SQUARE -C /tmp/png_dark_square .
+          echo "Compress Dark Square NoLink..."
+          tar -cpJf $OUT_DIR/$TAR_PNG_DARK_SQUARE_NOLINKS -C /tmp/png_dark_square_nolinks .
           echo "Compress Dark Wide..."
           tar -cpJf $OUT_DIR/$TAR_PNG_DARK_WIDE -C /tmp/png_dark_wide .
+          echo "Compress Dark Wide NoLink..."
+          tar -cpJf $OUT_DIR/$TAR_PNG_DARK_WIDE_NOLINKS -C /tmp/png_dark_wide_nolinks .
           echo "Compress Light Square..."
           tar -cpJf $OUT_DIR/$TAR_PNG_LIGHT_SQUARE -C /tmp/png_light_square .
+          echo "Compress Light Square NoLink..."
+          tar -cpJf $OUT_DIR/$TAR_PNG_LIGHT_SQUARE_NOLINKS -C /tmp/png_light_square_nolinks .
           echo "Compress Light Wide..."
           tar -cpJf $OUT_DIR/$TAR_PNG_LIGHT_WIDE -C /tmp/png_light_wide .
+          echo "Compress Light Wide NoLink..."
+          tar -cpJf $OUT_DIR/$TAR_PNG_LIGHT_WIDE_NOLINKS -C /tmp/png_light_wide_nolinks .
           echo "Compress Dark svg..."
           tar -cpJf $OUT_DIR/$TAR_SVG_DARK -C /tmp/svg_dark .
+          echo "Compress Dark svg NoLink..."
+          tar -cpJf $OUT_DIR/$TAR_SVG_DARK_NOLINKS -C /tmp/svg_dark_nolinks .
           echo "Compress Light svg..."
           tar -cpJf $OUT_DIR/$TAR_SVG_LIGHT -C /tmp/svg_light .
+          echo "Compress Light svg NoLink..."
+          tar -cpJf $OUT_DIR/$TAR_SVG_LIGHT_NOLINKS -C /tmp/svg_light_nolinks .
         env:
-          TAR_SVG_LIGHT: svg_light-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
-          TAR_SVG_DARK: svg_dark-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
-          TAR_PNG_LIGHT_SQUARE: png_light_square.${{ env.WIDTH_SQUARE }}x${{ env.WIDTH_SQUARE }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
           TAR_PNG_DARK_SQUARE: png_dark_square.${{ env.WIDTH_SQUARE }}x${{ env.WIDTH_SQUARE }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
-          TAR_PNG_LIGHT_WIDE: png_light_wide.${{ env.WIDTH_WIDE }}x${{ steps.height.outputs.height }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_PNG_DARK_SQUARE_NOLINKS: png_dark_square_nolinks.${{ env.WIDTH_SQUARE }}x${{ env.WIDTH_SQUARE }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
           TAR_PNG_DARK_WIDE: png_dark_wide.${{ env.WIDTH_WIDE }}x${{ steps.height.outputs.height }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_PNG_DARK_WIDE_NOLINKS: png_dark_wide_nolinks.${{ env.WIDTH_WIDE }}x${{ steps.height.outputs.height }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_PNG_LIGHT_SQUARE: png_light_square.${{ env.WIDTH_SQUARE }}x${{ env.WIDTH_SQUARE }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_PNG_LIGHT_SQUARE_NOLINKS: png_light_square_nolinks.${{ env.WIDTH_SQUARE }}x${{ env.WIDTH_SQUARE }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_PNG_LIGHT_WIDE: png_light_wide.${{ env.WIDTH_WIDE }}x${{ steps.height.outputs.height }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_PNG_LIGHT_WIDE_NOLINKS: png_light_wide_nolinks.${{ env.WIDTH_WIDE }}x${{ steps.height.outputs.height }}-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_SVG_DARK: svg_dark-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_SVG_DARK_NOLINKS: svg_dark_nolinks-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_SVG_LIGHT: svg_light-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+          TAR_SVG_LIGHT_NOLINKS: svg_light_nolinks-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
       - name: Publish
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
