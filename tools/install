@@ -14,9 +14,9 @@ function usage {
 
 function copy {
 	if [ "$debug" ]; then
-		cp -r -v "$1" "$2"
+		eval cp -r -v "$1" "$2"
 	else
-		cp -r "$1" "$2"
+		eval cp -r "$1" "$2"
 	fi
 }
 
