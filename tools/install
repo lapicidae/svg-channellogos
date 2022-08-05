@@ -4,7 +4,7 @@
 # Usage Message
 function usage {
 	echo "########## Install ##########" 1>&2
-	if [ ! -z "${1}" ]; then
+	if [ -n "${1}" ]; then
 		echo "ERROR: $1" 1>&2
 	fi
 	echo "Usage: $0 [-c <light|dark>] [-p <OutputPath>] [-r <remove content of OutputPath>] [-d <debug>]" 1>&2
@@ -13,10 +13,10 @@ function usage {
 }
 
 function copy {
-	if [ $debug ]; then
-		cp -r -v $1 $2
+	if [ "$debug" ]; then
+		cp -r -v "$1" "$2"
 	else
-		cp -r $1 $2
+		cp -r "$1" "$2"
 	fi
 }
 
@@ -49,16 +49,16 @@ if [ -z "$cur_path" ] ; then
 	echo "Path of $0 not accessible!"
 	exit 1
 else
-	cd $cur_path
+	cd "$cur_path" || exit 1
 fi
 
 
 ## Profit
 # check outdir
-if [ -z $outdir ]; then
+if [ -z "$outdir" ]; then
 	usage "OutputPath is empty!"
 elif [[ ! -e $outdir ]]; then
-	mkdir -p $outdir
+	mkdir -p "$outdir"
 elif [[ ! -d $outdir ]]; then
 	usage "$outdir already exists but is not a directory"
 fi
@@ -67,16 +67,16 @@ fi
 if [ $delete ]; then
 	if [ $debug ]; then
 		echo "Cleaning $outdir"
-		rm -rfv $outdir/*
+		rm -rfv "${outdir:?}/"*
 	else
-		rm -rf $outdir/*
+		rm -rf "${outdir:?}/"*
 	fi
 fi
 
 # copy files
-if [ $color == "light" ]; then
+if [ "$color" == "light" ]; then
 	copy "../light/*" "$outdir"
-elif [ $color == "dark" ]; then
+elif [ "$color" == "dark" ]; then
 	copy "../light/*" "$outdir"
 	copy "../dark/*" "$outdir"
 else

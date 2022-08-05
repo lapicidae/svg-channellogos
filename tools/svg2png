@@ -12,6 +12,7 @@ WIDTH=800
 OVERWRITE="false"
 FIXED="false"
 SQUARE="false"
+SUBDIRS="false"
 debug="false"
 
 ## Do not change ##
@@ -23,7 +24,7 @@ trap 'echo oh, I am slain; exit 130' INT
 ## Usage Message ##
 function usage {
 	echo "########## svg2png ##########" 1>&2
-	if [ ! -z "${1}" ]; then
+	if [ -n "${1}" ]; then
 		echo "ERROR: $1" 1>&2
 	fi
 	echo "Usage: $0 [-i <input dir>] [-o <output dir>] [-w <width>] [-r <fixed rectangle>] [-s <fixed square>] [-u <unlink>] [-f <overwrite>] [-d <debug>]" 1>&2
@@ -40,7 +41,7 @@ while getopts "di:o:w:h:rsuf" o; do
 			debug="true"
 			;;
 		i)
-			INPUT_DIR=$(readlink -e ${OPTARG})
+			INPUT_DIR=$(readlink -e "${OPTARG}")
 			;;
 		o)	OUTPUT_DIR=${OPTARG}
 			;;
@@ -75,12 +76,12 @@ fi
 
 
 ## width & height ##
-if [ -z ${HEIGHT} ] && [ $FIXED = "true" ] && [ $SQUARE = "true" ]; then
+if [ -z "${HEIGHT}" ] && [ $FIXED = "true" ] && [ $SQUARE = "true" ]; then
 	HEIGHT=$WIDTH
 	if [ $debug = "true" ]; then
 		echo "Square Format (W x H): $WIDTH x $HEIGHT px"
 	fi
-elif [ -z ${HEIGHT} ] && [ $FIXED = "true" ] && [ $SQUARE = "false" ] ; then
+elif [ -z "${HEIGHT}" ] && [ $FIXED = "true" ] && [ $SQUARE = "false" ] ; then
 	HEIGHT=$(awk -v wdth="$WIDTH" 'BEGIN {printf ("%d\n", wdth/(16/9))}')
 	if [ $debug = "true" ]; then
 		echo "Rectangle Format (W x H): $WIDTH x $HEIGHT px"
@@ -105,14 +106,14 @@ OUTPUT_DIR=$(readlink -e "$OUTPUT_DIR")
 ## Variables ##
 FORMAT=$(echo -e "$WIDTH"x"$HEIGHT")
 WORKDIR=$(mktemp -d --suffix=_svg2png)
-SUBDIR=$( ls -1p "$INPUT_DIR" | grep / | sed 's/\///g' )
-cd "$WORKDIR"
+mapfile -t SUBDIR < <(find "$INPUT_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
+cd "$WORKDIR" || exit 1
 
 
 
 # Copy and resize .png files
-pngfile=`ls -1 "$INPUT_DIR"/*.png 2>/dev/null | wc -l`
-if [ $pngfile != 0 ]; then
+pngfile=$(find "$INPUT_DIR" -type f -name "*.png" | wc -l)
+if [ "$pngfile" -gt 0 ]; then
 	mogrify -path "$OUTPUT_DIR" -auto-orient -thumbnail "$WIDTH"x "$INPUT_DIR"/*.png
 fi
 
@@ -127,13 +128,13 @@ for file in "$INPUT_DIR"/*.svg; do
 		if [ -L "$file" ] && [ ! -e "$file" ]; then
 			continue
 		elif [ -L "$file" ]; then
-			cd "$OUTPUT_DIR"
+			cd "$OUTPUT_DIR" || exit 1
 			destination="$(basename "$(readlink "$file")" .svg).png"
-			ln -s "$destination" "$pngname"
+			ln -sf "$destination" "$pngname"
 		elif [ $FIXED = "true" ]; then
-			convert -density $WIDTH -background none "$file" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTPUT_DIR/$pngname" || echo "^^ ERROR converting $file ^^"
+			convert -density "$WIDTH" -background none "$file" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTPUT_DIR/$pngname" || echo "^^ ERROR converting $file ^^"
 		else
-			rsvg-convert --keep-aspect-ratio --width=$WIDTH "$file" --output="$OUTPUT_DIR/$pngname"
+			rsvg-convert --keep-aspect-ratio --width="$WIDTH" "$file" --output="$OUTPUT_DIR/$pngname"
 		fi
 		if [ $debug = "true" ]; then
 			echo "DONE: '$pngname'"
@@ -148,54 +149,67 @@ done
 
 
 ## Subdirs ##
-for prefix in ${SUBDIR[@]}; do
-	for filename in "$INPUT_DIR/$prefix"/*; do
-		case $(file --mime-type -b "$filename") in
-			image/png)	# Copy, rename and resize .png files
-				OUTFILE=$(echo -e "$OUTPUT_DIR"/"$prefix"_"$filename")
-				convert "$filename" -resize "$WIDTH" "$OUTFILE"
-				if [ $debug = "true" ]; then
-					echo "Converted $prefix/$filename to $prefix"_"$filename"
-				fi
-			;;
-			image/svg*)	# Rename and Convert .svg to .png
-				pngname="$(basename "$filename" .svg).png"
-				OUTFILE=$(echo -e "$OUTPUT_DIR"/"$prefix"_"$pngname")
-				if [ $FIXED = "true" ] ; then
-					convert -density $WIDTH -background none "$filename" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTFILE" || echo "^^ ERROR converting $filename ^^"
-				else
-					rsvg-convert --keep-aspect-ratio --width=$WIDTH "$filename" --output="$OUTFILE"
-				fi
-				if [ $debug = "true" ]; then
-					echo "Converted $prefix/$filename to $prefix"_"$pngname"
-					exit 0
-				fi
-			;;
-		esac
+if [ "${SUBDIRS:="false"}" = "true" ]; then
+	if [ $debug = "true" ]; then
+		echo "Processing subdirs"
+	fi
+	for prefix in "${SUBDIR[@]}"; do
+		for infile in "$INPUT_DIR/$prefix"/*; do
+			filename="$(basename "$infile")"
+			pngname="$(printf '%s' "$filename" | sed -e 's/\.[^.]*$//').png"
+			case $(file --mime-type -b "$infile") in
+				image/png)		# Copy, rename and resize .png files
+					OUTFILE=$(echo -e "$OUTPUT_DIR"/"$prefix"_"$filename")
+					convert "$infile" -resize "$WIDTH" "$OUTFILE"
+					if [ $debug = "true" ]; then
+						echo "Converted $prefix/$filename to ${prefix}_${filename}"
+					fi
+				;;
+				image/svg*)		# Rename and Convert .svg to .png
+					OUTFILE=$(echo -e "$OUTPUT_DIR"/"$prefix"_"$pngname")
+					if [ $FIXED = "true" ]; then
+						convert -density "$WIDTH" -background none "$infile" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTFILE" || echo "^^ ERROR converting $filename ^^"
+					else
+						rsvg-convert --keep-aspect-ratio --width="$WIDTH" "$infile" --output="$OUTFILE"
+					fi
+					if [ $debug = "true" ]; then
+						echo "Converted $prefix/$filename to ${prefix}_${pngname}"
+					fi
+				;;
+				inode/symlink)	# Modify (copy) symlinks
+					cd "$OUTPUT_DIR" || exit 1
+					destination="$(basename "$(readlink "$infile")" | sed -e 's/\.[^.]*$//').png"
+					ln -sf "$destination" "${prefix}_${pngname}"
+					if [ $debug = "true" ]; then
+						echo "Converted symlink ${prefix}_${pngname} -> $destination"
+					fi
+				;;
+			esac
+		done
 	done
-done
+fi
 
 
 
 ## Unlink ##
 if [ ${UNLINK:="false"} = "true" ]; then
-	UNL_TMP_DIR=$(mktemp -d --tmpdir=$WORKDIR --suffix=_unlink)
+	UNL_TMP_DIR=$(mktemp -d --tmpdir="$WORKDIR" --suffix=_unlink)
 	if [ -d "$UNL_TMP_DIR" ]; then
 		mkdir -p "$UNL_TMP_DIR"
 	fi
 
-	LINKS=($(find "$OUTPUT_DIR" -type l -print))
+	mapfile -t LINKS < <(find "$OUTPUT_DIR" -type l -print)
 
-	for unlink in ${LINKS[@]}; do
-		UN_INPUT=$(readlink -e -f $unlink)
-		UN_OUTPUT=$(basename $unlink)
+	for unlink in "${LINKS[@]}"; do
+		UN_INPUT=$(readlink -e -f "$unlink")
+		UN_OUTPUT=$(basename "$unlink")
 		cp "$UN_INPUT" "$UNL_TMP_DIR/$UN_OUTPUT"
 	done
 
-	mv "$UNL_TMP_DIR"/* "$OUTPUT_DIR" 2>/dev/null | true
+	mv "$UNL_TMP_DIR"/* "$OUTPUT_DIR" 2>/dev/null || true
 fi
 
 
 
 ## CleanUp ##
-rm -rf $WORKDIR
+rm -rf "$WORKDIR"

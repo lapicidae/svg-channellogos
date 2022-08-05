@@ -4,14 +4,14 @@ functions=("vecta" "lowercase")
 
 ### Functions
 function vecta {
-	find $1 -type f -name "*.svg" -print0 | xargs -0 sed -i -e 's/ xmlns:v="https:\/\/vecta.io\/nano"//g'
+	find "$1" -type f -name "*.svg" -print0 | xargs -0 sed -i -e 's/ xmlns:v="https:\/\/vecta.io\/nano"//g'
 }
 
 function lowercase {
 	upFiles=()
 	while IFS=  read -r -d $'\0'; do
 		upFiles+=("$REPLY")
-	done < <(find $1 -type f -name "*[A-Z]*.svg" -print0)
+	done < <(find "$1" -type f -name "*[A-Z]*.svg" -print0)
 	for i in "${upFiles[@]}"; do
 		DIR=$(dirname "${i}")
 		FILE=$(basename "${i}")
@@ -23,7 +23,7 @@ function lowercase {
 # Usage Message
 function usage {
 	echo "########## CleanUp ##########" 1>&2
-	if [ ! -z "${1}" ]; then
+	if [ -n "${1}" ]; then
 		echo "ERROR: $1" 1>&2
 	fi
 	echo "Usage: $0 [-f <function>] [-p <Path>] [-d <debug>]" 1>&2
@@ -56,8 +56,8 @@ if [ -z "${FUNCTION}" ] || [ -z "${DIR}" ]; then
 	usage "Function or Path missing!"
 elif [ ! -d "$DIR" ]; then
 	usage "Wrong Path '$DIR'!"
-elif [[ ! " ${functions[@]} " =~ " ${FUNCTION} " ]]; then
+elif [[ ! "${functions[*]}" =~ ${FUNCTION} ]]; then
 	usage "Wrong Function '$FUNCTION'!"
 else
-	$FUNCTION $DIR
+	$FUNCTION "$DIR"
 fi
