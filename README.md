@@ -1,5 +1,6 @@
+[![svg-channellogos](svg-channellogos-logo.svg)](https://github.com/lapicidae/svg-channellogos)
 
-# svg-channellogos
+# [lapicidae/svg-channellogos](https://github.com/lapicidae/svg-channellogos)
 SVG TV &amp; Radio Logos.<br/>
 Primarily for German, Swiss and Austrian Channels on Astra 19.2°E.<br/>
 
