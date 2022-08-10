@@ -1,33 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="800" height="124.76" version="1.1" xmlns="http://www.w3.org/2000/svg">
-	<linearGradient id="A" x1="1456.7" x2="1456.7" y2="500" gradientTransform="matrix(.24952 0 0 .24952 .0072311 .00062541)" gradientUnits="userSpaceOnUse">
-		<stop stop-color="red" offset=".4"/>
-		<stop stop-color="#d42321" offset="1"/>
-	</linearGradient>
-	<linearGradient id="B" x1="1459.5" x2="1450.8" y1="233.73" y2="-15.325" gradientTransform="matrix(.24952 0 0 .24952 .0072311 .00062541)" gradientUnits="userSpaceOnUse">
-		<stop stop-color="#fff" offset="0"/>
-		<stop stop-color="#fff" stop-opacity=".835" offset=".12"/>
-		<stop stop-color="#fff" stop-opacity=".658" offset=".269"/>
-		<stop stop-color="#fff" stop-opacity=".511" offset=".42"/>
-		<stop stop-color="#fff" stop-opacity=".397" offset=".568"/>
-		<stop stop-color="#fff" stop-opacity=".315" offset=".716"/>
-		<stop stop-color="#fff" stop-opacity=".266" offset=".86"/>
-		<stop stop-color="#fff" stop-opacity=".25" offset="1"/>
-	</linearGradient>
-	<linearGradient id="C" x1="361.92" x2="361.92" y1="28.806" y2="471.22" gradientTransform="matrix(.24952 0 0 .24952 .0072311 .00062541)" gradientUnits="userSpaceOnUse">
-		<stop stop-color="#cbcbcb" offset="0"/>
-		<stop stop-color="#d4d4d4" offset=".8"/>
-	</linearGradient>
-	<linearGradient id="D" x1="365.45" x2="359.6" y1="263.25" y2="95.751" gradientTransform="matrix(.24952 0 0 .24952 .0072311 .00062541)" gradientUnits="userSpaceOnUse">
-		<stop stop-color="#fff" offset="0"/>
-		<stop stop-color="#fff" stop-opacity=".835" offset=".12"/>
-		<stop stop-color="#fff" stop-opacity=".658" offset=".269"/>
-		<stop stop-color="#fff" stop-opacity=".511" offset=".42"/>
-		<stop stop-color="#fff" stop-opacity=".397" offset=".568"/>
-		<stop stop-color="#fff" stop-opacity=".315" offset=".716"/>
-		<stop stop-color="#fff" stop-opacity=".266" offset=".86"/>
-		<stop stop-color="#fff" stop-opacity=".25" offset="1"/>
-	</linearGradient>
+	<defs>
+		<linearGradient id="A" x1="1456.7" x2="1456.7" y2="500" gradientTransform="matrix(.24952 0 0 .24952 .0072311 .00062541)" gradientUnits="userSpaceOnUse">
+			<stop stop-color="red" offset=".4"/>
+			<stop stop-color="#d42321" offset="1"/>
+		</linearGradient>
+		<linearGradient id="B" x1="1459.5" x2="1450.8" y1="233.73" y2="-15.325" gradientTransform="matrix(.24952 0 0 .24952 .0072311 .00062541)" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#fff" offset="0"/>
+			<stop stop-color="#fff" stop-opacity=".835" offset=".12"/>
+			<stop stop-color="#fff" stop-opacity=".658" offset=".269"/>
+			<stop stop-color="#fff" stop-opacity=".511" offset=".42"/>
+			<stop stop-color="#fff" stop-opacity=".397" offset=".568"/>
+			<stop stop-color="#fff" stop-opacity=".315" offset=".716"/>
+			<stop stop-color="#fff" stop-opacity=".266" offset=".86"/>
+			<stop stop-color="#fff" stop-opacity=".25" offset="1"/>
+		</linearGradient>
+		<linearGradient id="C" x1="361.92" x2="361.92" y1="28.806" y2="471.22" gradientTransform="matrix(.24952 0 0 .24952 .0072311 .00062541)" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#cbcbcb" offset="0"/>
+			<stop stop-color="#d4d4d4" offset=".8"/>
+		</linearGradient>
+		<linearGradient id="D" x1="365.45" x2="359.6" y1="263.25" y2="95.751" gradientTransform="matrix(.24952 0 0 .24952 .0072311 .00062541)" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#fff" offset="0"/>
+			<stop stop-color="#fff" stop-opacity=".835" offset=".12"/>
+			<stop stop-color="#fff" stop-opacity=".658" offset=".269"/>
+			<stop stop-color="#fff" stop-opacity=".511" offset=".42"/>
+			<stop stop-color="#fff" stop-opacity=".397" offset=".568"/>
+			<stop stop-color="#fff" stop-opacity=".315" offset=".716"/>
+			<stop stop-color="#fff" stop-opacity=".266" offset=".86"/>
+			<stop stop-color="#fff" stop-opacity=".25" offset="1"/>
+		</linearGradient>
+	</defs>
 	<g>
 		<path d="m519.33 6.2541e-4v124.76h272.36c4.5911 0 8.3079-3.7167 8.3079-8.3079v-108.14c0.025-4.5911-3.6918-8.3096-8.3079-8.3096z" fill="#cbcbcb"/>
 		<path d="m519.33 2.4954v119.77h272.36c3.2125 5e-3 5.8182-2.6004 5.813-5.813v-108.14c0-3.1938-2.5942-5.8148-5.813-5.8148z" fill="#fff"/>
