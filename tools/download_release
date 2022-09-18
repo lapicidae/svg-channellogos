@@ -1,0 +1,39 @@
+#!/bin/bash
+
+## Settings ##
+OUT_DIR="/tmp/chlogos"	# output directory
+SYMLINKS="no"			# use symlinks (yes | no)
+COLOR="light"			# light | dark
+FORMAT="square"			# square | wide
+
+# Do not change!
+TMP_DIR=$(mktemp -d --suffix=_chlogo)
+LATEST_URL="https://api.github.com/repos/lapicidae/svg-channellogos/releases/latest"
+
+
+trap 'rm -rf "$TMP_DIR"' EXIT
+
+
+# Download file using curl
+if [ $SYMLINKS = "no" ]; then
+	curl -s "$LATEST_URL" | \
+			grep "browser_download_url" | \
+			grep -Eo 'https://[^\"]*' | \
+			grep -ie "$COLOR.*$FORMAT.*nolinks.*tar.xz$" | \
+			xargs curl -s -L -o "$TMP_DIR"/channellogos.tar.xz
+else
+	curl -s "$LATEST_URL" | \
+			grep "browser_download_url" | \
+			grep -Eo 'https://[^\"]*' | \
+			grep -ie "$COLOR.*$FORMAT\..*tar.xz$" | \
+			xargs curl -s -L -o "$TMP_DIR"/channellogos.tar.xz
+fi
+
+
+# Extract the file
+if [ -d $OUT_DIR ]; then
+	tar xf "$TMP_DIR/channellogos.tar.xz" --owner=nobody --group=users -C "$OUT_DIR"
+else
+	echo "ERROR: the directory '$OUT_DIR' does not exist!"
+	exit 1
+fi
