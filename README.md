@@ -1,6 +1,11 @@
 [![svg-channellogos](svg-channellogos-logo.svg)](https://github.com/lapicidae/svg-channellogos)
 
 # [lapicidae/svg-channellogos](https://github.com/lapicidae/svg-channellogos)
+
+[![GitHub Repo stars](https://img.shields.io/github/stars/lapicidae/svg-channellogos?color=3c0e7b&logo=github&logoColor=fff&style=for-the-badge)](https://github.com/lapicidae/svg-channellogos)
+[![GitHub Release](https://img.shields.io/github/release-date/lapicidae/svg-channellogos?color=3c0e7b&label=release&logo=github&logoColor=fff&style=for-the-badge)](https://github.com/lapicidae/svg-channellogos/releases)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/lapicidae/svg-channellogos/weekly-release.yml?logo=github&logoColor=fff&style=for-the-badge)](https://github.com/lapicidae/svg-channellogos/actions/workflows/weekly-release.yml)
+
 SVG TV &amp; Radio Logos.<br/>
 Primarily for German, Swiss and Austrian Channels on Astra 19.2°E.<br/>
 
