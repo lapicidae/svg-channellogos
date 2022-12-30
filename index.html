@@ -23,8 +23,8 @@
 			margin-top: 20px;
 		}
 		.img {
-			width: 10vw;
-			height: 10vw;
+			width: 5vw;
+			height: 5vw;
 			margin: 10px;
 			background-size: contain;
 			background-repeat: no-repeat;
@@ -38,7 +38,7 @@
 <script type="module">
 	import {render, html} from 'https://unpkg.com/uhtml?module';
 	window.onload = async () => {
-		const pathname = window.location.pathname.replace(/\/svg-channellogos/, '');
+		const pathname = encodeURI(window.location.pathname.replace(/\/svg-channellogos/, ''));
 		const response = await fetch(`https://api.github.com/repos/lapicidae/svg-channellogos/contents${pathname}`)
 		const results = await response.json()
 		render(document.body, html`
