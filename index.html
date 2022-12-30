@@ -38,7 +38,7 @@
 <script type="module">
 	import {render, html} from 'https://unpkg.com/uhtml?module';
 	window.onload = async () => {
-		const pathname = escape(window.location.pathname.replace(/\/svg-channellogos/, ''));
+		const pathname = encodeURI(window.location.pathname.replace(/\/svg-channellogos/, ''));
 		const response = await fetch(`https://api.github.com/repos/lapicidae/svg-channellogos/contents${pathname}`)
 		const results = await response.json()
 		render(document.body, html`
@@ -46,14 +46,14 @@
 				${results.filter(el => el.type === 'dir').map(el => html`
 				<a
 					class="directory"
-					href="${`https://lapicidae.github.io/svg-channellogos${pathname}${escape(el.name)}`}">${escape(el.name)}`)}
+					href="${`https://lapicidae.github.io/svg-channellogos${pathname}${encodeURI(el.name)}`}">${encodeURI(el.name)}`)}
 			</div>
 			<div class="gallery">
 				${results.filter(el => el.name.match(/\.(gif|jpe?g|tiff?|png|webp|bmp|svg)$/i)).map(el => html`
 				<a
 					class="img"
-					href="${`https://lapicidae.github.io/svg-channellogos${pathname}${escape(el.name)}`}"
-					style="${`background-image: url(https://lapicidae.github.io/svg-channellogos${pathname}${escape(el.name)})`}">`)}
+					href="${`https://lapicidae.github.io/svg-channellogos${pathname}${encodeURI(el.name)}`}"
+					style="${`background-image: url(https://lapicidae.github.io/svg-channellogos${pathname}${encodeURI(el.name)})`}">`)}
 		`)
 	}
 </script>
