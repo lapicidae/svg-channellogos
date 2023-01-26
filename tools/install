@@ -64,8 +64,8 @@ elif [[ ! -d $outdir ]]; then
 fi
 
 # remove content of outdir
-if [ $delete ]; then
-	if [ $debug ]; then
+if [ "$delete" ]; then
+	if [ "$debug" ]; then
 		echo "Cleaning $outdir"
 		rm -rfv "${outdir:?}/"*
 	else
