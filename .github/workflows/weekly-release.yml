@@ -41,7 +41,7 @@ jobs:
         id: height
         run: echo "::set-output name=height::$(echo | awk -v wdth="$WIDTH_WIDE" '{printf ("%d\n", wdth/(16/9))}')"
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
       - name: Prepare
         run: |
