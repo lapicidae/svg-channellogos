@@ -1,6 +1,7 @@
 # Fonts
-Roadkill W00 Regular		->	Babestation24	(not Exact)
-Sky Text, Normal		->	Sky (germany)
-Europa Grotesk SH, Normal	->	PENTHOUSE TV
-Nomada Slab, Ultra-Bold		->	PENTHOUSE TV
-ZonaPro-Black, Normal		->	Deluxe Music	(and sub channels)
+Roadkill W00 Regular				->	Babestation24	(not Exact)
+Sky Text, Normal				->	Sky (germany)
+Europa Grotesk SH, Normal			->	PENTHOUSE TV
+Futura Std, Extra Bold Condensed Oblique	-> 	Red Adventure
+Nomada Slab, Ultra-Bold				->	PENTHOUSE TV
+ZonaPro-Black, Normal				->	Deluxe Music	(and sub channels)
