@@ -27,7 +27,7 @@ jobs:
           do_not_skip: '["workflow_dispatch"]'
           paths: '["**.svg"]'
       - id: keepalive
-        uses: gautamkrishnar/keepalive-workflow@v1 # using the workflow with default settings
+        uses: gautamkrishnar/keepalive-workflow@v2 # using the workflow with default settings
   main_job:
     name: Convert & Publish
     needs: pre_job
