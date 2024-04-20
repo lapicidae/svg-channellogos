@@ -36,10 +36,10 @@ jobs:
     steps:
       - name: Current year and week
         id: date
-        run: echo "::set-output name=date::$(date +'%Y%V')"
+        run: echo "date=$(date +'%Y%V')" >> $GITHUB_OUTPUT
       - name: Height
         id: height
-        run: echo "::set-output name=height::$(echo | awk -v wdth="$WIDTH_WIDE" '{printf ("%d\n", wdth/(16/9))}')"
+        run: echo "height=$(echo | awk -v wdth="$WIDTH_WIDE" '{printf ("%d\n", wdth/(16/9))}')" >> $GITHUB_OUTPUT
       - name: Check out repository code
         uses: actions/checkout@v4
       - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
