@@ -12,21 +12,10 @@ jobs:
       - name: Generate Directory Listings
         uses: jayanta525/github-pages-directory-listing@v4.0.0
         with:                     # directory to generate index
-          FOLDER: |
-            dark
-            light
-
-      - name: Upload directory    # create upload dir and set variable
-        id: updir
-        run: |
-          DIR=data
-          echo "dir=$DIR" >> $GITHUB_OUTPUT
-          mkdir -p $DIR
+          FOLDER: light
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
-        with:                     # upload generated folder
-          path: ${{ steps.updir.outputs.dir }}
   
   deploy:
     needs: pages-directory-listing
