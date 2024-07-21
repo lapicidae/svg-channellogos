@@ -8,10 +8,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:                     # checkout different branch
-          sparse-checkout: |
-            dark
-            light
 
       - name: Generate Directory Listings
         uses: jayanta525/github-pages-directory-listing@v4.0.0
