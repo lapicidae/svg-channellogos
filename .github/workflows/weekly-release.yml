@@ -27,7 +27,7 @@ jobs:
           do_not_skip: '["workflow_dispatch"]'
           paths: '["**.svg"]'
       - id: keepalive
-        uses: gautamkrishnar/keepalive-workflow@v2 # using the workflow with default settings
+        uses: entepotenz/keep-github-actions-alive-min-dependencies@v1 # using the workflow with default settings
   main_job:
     name: Convert & Publish
     needs: pre_job
