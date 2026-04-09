@@ -1,38 +1,35 @@
-name: directory-listing
-on: [push]
+name: Deploy Logo Gallery to Pages
+
+on:
+  push:
+    branches: ["master"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  pages-directory-listing:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    name: Directory Listings Index
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Generate Directory Listings
-        uses: jayanta525/github-pages-directory-listing@v4.0.0
-        with:                     # directory to generate index
-          FOLDER: light
+      - name: Run Gallery Generator
+        run: |
+          chmod +x tools/generate_gallery.sh
+          ./tools/generate_gallery.sh
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'light'           # upload generated folder
-  
-  deploy:
-    needs: pages-directory-listing
-    permissions:
-      pages: write          # to deploy to Pages
-      id-token: write       # to verify the deployment originates from an appropriate source
+          path: 'public'
 
-    # Deploy to the github-pages environment
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    # Specify runner + deployment step
-    runs-on: ubuntu-latest
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
