@@ -7,10 +7,11 @@ on:
     - cron: '0 23 * * 0'
   workflow_dispatch:
     inputs:
-      tags:
-          description: 'Test scenario'
-          required: false
-          type: boolean
+      dry_run:
+        description: 'Dry Run'
+        required: false
+        type: boolean
+        default: false
 jobs:
   pre_job:
     name: Skip Duplicate
@@ -142,12 +143,13 @@ jobs:
           TAR_SVG_LIGHT: svg_light-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
           TAR_SVG_LIGHT_NOLINKS: svg_light_nolinks-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
       - name: Publish
-        uses: "marvinpinto/action-automatic-releases@latest"
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        uses: softprops/action-gh-release@v3
         with:
-          repo_token: "${{ secrets.REPO_ACCESS_TOKEN }}"
-          automatic_release_tag: "latest"
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          tag_name: latest
+          name: Release - ${{ steps.date.outputs.date }}
           prerelease: false
-          title: "Release - ${{ steps.date.outputs.date }}"
           files: /tmp/release/*.tar.xz
     env:
       OUT_DIR: /tmp/release
