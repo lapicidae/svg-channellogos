@@ -142,6 +142,13 @@ jobs:
           TAR_SVG_DARK_NOLINKS: svg_dark_nolinks-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
           TAR_SVG_LIGHT: svg_light-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
           TAR_SVG_LIGHT_NOLINKS: svg_light_nolinks-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
+      - name: Delete old release assets
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        uses: andreaswilli/delete-release-assets-action@v4.0.0
+        with:
+          github_token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          tag: latest
+          deleteOnlyFromDrafts: 'false'
       - name: Publish
         if: ${{ github.event.inputs.dry_run != 'true' }}
         uses: softprops/action-gh-release@v3
