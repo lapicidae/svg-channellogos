@@ -1,215 +1,258 @@
 #!/bin/bash
+#
+# Convert SVG files (and PNGs) to PNG format using rsvg-convert
+# with ImageMagick convert fallback.
 
-# SVG2PNG
-# To use this you need to have awk, librsvg, inkscape and imagemagick installed.
+set -euo pipefail
 
+#######################################
+# Global Configuration & Defaults
+#######################################
+readonly SCRIPT_NAME="${0##*/}"
 
-
-## Config ##
-WIDTH=800
-
-## Defaults ##
+WIDTH="800"
+HEIGHT=""
 OVERWRITE="false"
 FIXED="false"
 SQUARE="false"
-SUBDIRS="false"
-debug="false"
+UNLINK="false"
+DEBUG="false"
+INPUT_DIR=""
+OUTPUT_DIR=""
+HAS_RSVG="false"
+HAS_CONVERT="false"
+UNLINK_TMP=""
 
-## Do not change ##
-IFS=$'\n'
-trap 'echo oh, I am slain; exit 130' INT
-
-
-
-## Usage Message ##
-function usage {
-	echo "########## svg2png ##########" 1>&2
-	if [ -n "${1}" ]; then
-		echo "ERROR: $1" 1>&2
+#######################################
+# Cleans up temporary resources on script termination.
+# Globals:
+#   UNLINK_TMP
+# Arguments:
+#   None
+# Outputs:
+#   None
+#######################################
+cleanup() {
+	if [[ -n "${UNLINK_TMP:-}" && -d "${UNLINK_TMP}" ]]; then
+		rm -rf "${UNLINK_TMP}"
 	fi
-	echo "Usage: $0 [-i <input dir>] [-o <output dir>] [-w <width>] [-r <fixed rectangle>] [-s <fixed square>] [-u <unlink>] [-f <overwrite>] [-d <debug>]" 1>&2
-	echo "#############################" 1>&2
+}
+
+# Register signal trap for safe cleanup
+trap cleanup EXIT INT TERM
+
+#######################################
+# Prints usage instructions to stderr.
+# Globals:
+#   SCRIPT_NAME
+# Arguments:
+#   None
+# Outputs:
+#   Writes usage text to stderr.
+#######################################
+usage() {
+	printf "Usage: %s -i <input_dir> -o <output_dir> [-w <width>] [-r] [-s] [-u] [-f] [-d]\n" "${SCRIPT_NAME}" >&2
+	printf "  -i: Input directory containing SVG/PNG files (required)\n" >&2
+	printf "  -o: Output directory for rendered PNGs (required)\n" >&2
+	printf "  -w: Target width in pixels (default: 800)\n" >&2
+	printf "  -r: Fixed aspect ratio (16:9 rectangle)\n" >&2
+	printf "  -s: Fixed aspect ratio (1:1 square)\n" >&2
+	printf "  -u: Unlink symlinks in output directory\n" >&2
+	printf "  -f: Overwrite existing PNG files\n" >&2
+	printf "  -d: Enable debug logging\n" >&2
 	exit 1
 }
 
+#######################################
+# Converts a single SVG file to PNG format.
+# Globals:
+#   OUTPUT_DIR, WIDTH, HEIGHT, FIXED, OVERWRITE, DEBUG, HAS_RSVG, HAS_CONVERT
+# Arguments:
+#   file: Path to the input SVG file.
+# Outputs:
+#   Logs processing status to stdout/stderr.
+#######################################
+convert_file() {
+	local file="$1"
+	local base_name target
+	base_name="$(basename "${file}" .svg)"
+	target="${OUTPUT_DIR}/${base_name}.png"
 
-
-## check Parameters ##
-while getopts "di:o:w:h:rsuf" o; do
-	case "${o}" in
-		d)
-			debug="true"
-			;;
-		i)
-			INPUT_DIR=$(readlink -e "${OPTARG}")
-			;;
-		o)	OUTPUT_DIR=${OPTARG}
-			;;
-		w)
-			WIDTH=${OPTARG}
-			;;
-		r)
-			FIXED="true"
-			SQUARE="false"
-			;;
-		s)
-			FIXED="true"
-			SQUARE="true"
-			;;
-		u)
-			UNLINK="true"
-			;;
-		f)
-			OVERWRITE="true"
-			;;
-		*)
-			usage
-			;;
-	esac
-done
-shift $((OPTIND-1))
-
-if [ -z "$INPUT_DIR" ] || [ -z "$OUTPUT_DIR" ]; then
-	usage "Function or Path missing!"
-fi
-
-
-
-## width & height ##
-if [ -z "${HEIGHT}" ] && [ $FIXED = "true" ] && [ $SQUARE = "true" ]; then
-	HEIGHT=$WIDTH
-	if [ $debug = "true" ]; then
-		echo "Square Format (W x H): $WIDTH x $HEIGHT px"
-	fi
-elif [ -z "${HEIGHT}" ] && [ $FIXED = "true" ] && [ $SQUARE = "false" ] ; then
-	HEIGHT=$(awk -v wdth="$WIDTH" 'BEGIN {printf ("%d\n", wdth/(16/9))}')
-	if [ $debug = "true" ]; then
-		echo "Rectangle Format (W x H): $WIDTH x $HEIGHT px"
-	fi
-fi
-
-
-
-## check DIR ##
-if [ -z "$INPUT_DIR" ]; then
-	usage "$INPUT_DIR is empty!"
-elif [ ! -e "$OUTPUT_DIR" ]; then
-	mkdir -p "$OUTPUT_DIR"
-elif [ ! -d "$OUTPUT_DIR" ]; then
-	usage "$OUTPUT_DIR already exists but is not a directory"
-fi
-
-OUTPUT_DIR=$(readlink -e "$OUTPUT_DIR")
-
-
-
-## Variables ##
-FORMAT=$(echo -e "$WIDTH"x"$HEIGHT")
-WORKDIR=$(mktemp -d --suffix=_svg2png)
-mapfile -t SUBDIR < <(find "$INPUT_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
-cd "$WORKDIR" || exit 1
-
-
-
-# Copy and resize .png files
-pngfile=$(find "$INPUT_DIR" -type f -name "*.png" | wc -l)
-if [ "$pngfile" -gt 0 ]; then
-	mogrify -path "$OUTPUT_DIR" -auto-orient -thumbnail "$WIDTH"x "$INPUT_DIR"/*.png
-fi
-
-
-# Convert .svg to .png and keep links
-for file in "$INPUT_DIR"/*.svg; do
-	pngname="$(basename "$file" .svg).png"
-	if [ ! -f "$OUTPUT_DIR/$pngname" ] || [ $OVERWRITE = "true" ]; then
-		if [ $debug = "true" ]; then
-			echo "Processing '$file'..."
+	if [[ "${OVERWRITE}" != "true" && -f "${target}" ]]; then
+		if [[ "${DEBUG}" == "true" ]]; then
+			printf "Skipping existing file: %s\n" "${target}"
 		fi
-		if [ -L "$file" ] && [ ! -e "$file" ]; then
-			continue
-		elif [ -L "$file" ]; then
-			cd "$OUTPUT_DIR" || exit 1
-			destination="$(basename "$(readlink "$file")" .svg).png"
-			ln -sf "$destination" "$pngname"
-		elif [ $FIXED = "true" ]; then
-			convert -density "$WIDTH" -background none "$file" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTPUT_DIR/$pngname" || echo "^^ ERROR converting $file ^^"
+		return 0
+	fi
+
+	if [[ "${DEBUG}" == "true" ]]; then
+		printf "Processing: %s -> %s\n" "${file}" "${target}"
+	fi
+
+	# 1. Primary conversion attempt via rsvg-convert
+	if [[ "${HAS_RSVG}" == "true" ]]; then
+		local rsvg_opts=(--keep-aspect-ratio --width="${WIDTH}")
+		if [[ "${FIXED}" == "true" ]]; then
+			rsvg_opts+=(--height="${HEIGHT}" --background-color=none)
+		fi
+
+		if rsvg-convert "${rsvg_opts[@]}" "${file}" --output="${target}" 2>/dev/null; then
+			return 0
+		fi
+	fi
+
+	# 2. Fallback conversion attempt via ImageMagick convert
+	if [[ "${HAS_CONVERT}" == "true" ]]; then
+		if [[ "${DEBUG}" == "true" ]]; then
+			printf "Falling back to ImageMagick 'convert' for: %s\n" "${file}"
+		fi
+		local convert_opts=(-density "${WIDTH}" -background none -resize "${WIDTH}x${HEIGHT}")
+		if [[ "${FIXED}" == "true" ]]; then
+			convert_opts+=(-gravity center -extent "${WIDTH}x${HEIGHT}")
+		fi
+
+		if convert "${convert_opts[@]}" "${file}" "${target}" 2>/dev/null; then
+			return 0
+		fi
+	fi
+
+	printf "Error: Failed to convert '%s'.\n" "${file}" >&2
+	return 1
+}
+
+#######################################
+# Unlinks symlinks in the output directory by resolving them.
+# Globals:
+#   OUTPUT_DIR, DEBUG, UNLINK_TMP
+# Arguments:
+#   None
+# Outputs:
+#   Logs status to stdout.
+#######################################
+unlink_output_symlinks() {
+	if [[ "${DEBUG}" == "true" ]]; then
+		printf "Unlinking symlinks in output directory...\n"
+	fi
+
+	UNLINK_TMP="$(mktemp -d --suffix=_unlink)"
+
+	local link
+	while IFS= read -r -d '' link; do
+		local target_file link_name
+		target_file="$(readlink -f "${link}")"
+		link_name="$(basename "${link}")"
+		cp "${target_file}" "${UNLINK_TMP}/${link_name}" 2>/dev/null || true
+	done < <(find "${OUTPUT_DIR}" -type l -print0)
+
+	if find "${UNLINK_TMP}" -mindepth 1 -print -quit | grep -q .; then
+		find "${UNLINK_TMP}" -mindepth 1 -maxdepth 1 -exec mv -t "${OUTPUT_DIR}/" {} + 2>/dev/null || true
+	fi
+}
+
+#######################################
+# Main script entry point.
+# Arguments:
+#   Command line flags.
+#######################################
+main() {
+	while getopts "di:o:w:rsuf" opt; do
+		case "${opt}" in
+			d) DEBUG="true" ;;
+			i) INPUT_DIR="${OPTARG}" ;;
+			o) OUTPUT_DIR="${OPTARG}" ;;
+			w) WIDTH="${OPTARG}" ;;
+			r)
+				FIXED="true"
+				SQUARE="false"
+				;;
+			s)
+				FIXED="true"
+				SQUARE="true"
+				;;
+			u) UNLINK="true" ;;
+			f) OVERWRITE="true" ;;
+			*) usage ;;
+		esac
+	done
+
+	if [[ -z "${INPUT_DIR}" || -z "${OUTPUT_DIR}" ]]; then
+		printf "Error: Both input (-i) and output (-o) directories are required.\n" >&2
+		usage
+	fi
+
+	if [[ ! -d "${INPUT_DIR}" ]]; then
+		printf "Error: Input directory '%s' does not exist.\n" "${INPUT_DIR}" >&2
+		exit 1
+	fi
+
+	INPUT_DIR="$(readlink -e "${INPUT_DIR}")"
+	mkdir -p "${OUTPUT_DIR}"
+	OUTPUT_DIR="$(readlink -e "${OUTPUT_DIR}")"
+
+	# Calculate target height using native bash arithmetic
+	if [[ "${FIXED}" == "true" ]]; then
+		if [[ "${SQUARE}" == "true" ]]; then
+			HEIGHT="${WIDTH}"
 		else
-			rsvg-convert --keep-aspect-ratio --width="$WIDTH" "$file" --output="$OUTPUT_DIR/$pngname"
+			HEIGHT="$(( WIDTH * 9 / 16 ))"
 		fi
-		if [ $debug = "true" ]; then
-			echo "DONE: '$pngname'"
-		fi
-	else
-		if [ $debug = "true" ]; then
-			echo "$pngname already exists!"
+		if [[ "${DEBUG}" == "true" ]]; then
+			printf "Format set to fixed geometry: %sx%s px\n" "${WIDTH}" "${HEIGHT}"
 		fi
 	fi
-done
 
-
-
-## Subdirs ##
-if [ "${SUBDIRS:="false"}" = "true" ]; then
-	if [ $debug = "true" ]; then
-		echo "Processing subdirs"
+	# Check availability of conversion binaries
+	if command -v rsvg-convert >/dev/null 2>&1; then
+		HAS_RSVG="true"
 	fi
-	for prefix in "${SUBDIR[@]}"; do
-		for infile in "$INPUT_DIR/$prefix"/*; do
-			filename="$(basename "$infile")"
-			pngname="$(printf '%s' "$filename" | sed -e 's/\.[^.]*$//').png"
-			case $(file --mime-type -b "$infile") in
-				image/png)		# Copy, rename and resize .png files
-					OUTFILE=$(echo -e "$OUTPUT_DIR"/"$prefix"_"$filename")
-					convert "$infile" -resize "$WIDTH" "$OUTFILE"
-					if [ $debug = "true" ]; then
-						echo "Converted $prefix/$filename to ${prefix}_${filename}"
-					fi
-				;;
-				image/svg*)		# Rename and Convert .svg to .png
-					OUTFILE=$(echo -e "$OUTPUT_DIR"/"$prefix"_"$pngname")
-					if [ $FIXED = "true" ]; then
-						convert -density "$WIDTH" -background none "$infile" -resize "$FORMAT" -gravity center -extent "$FORMAT" "$OUTFILE" || echo "^^ ERROR converting $filename ^^"
-					else
-						rsvg-convert --keep-aspect-ratio --width="$WIDTH" "$infile" --output="$OUTFILE"
-					fi
-					if [ $debug = "true" ]; then
-						echo "Converted $prefix/$filename to ${prefix}_${pngname}"
-					fi
-				;;
-				inode/symlink)	# Modify (copy) symlinks
-					cd "$OUTPUT_DIR" || exit 1
-					destination="$(basename "$(readlink "$infile")" | sed -e 's/\.[^.]*$//').png"
-					ln -sf "$destination" "${prefix}_${pngname}"
-					if [ $debug = "true" ]; then
-						echo "Converted symlink ${prefix}_${pngname} -> $destination"
-					fi
-				;;
-			esac
-		done
-	done
-fi
-
-
-
-## Unlink ##
-if [ "${UNLINK:="false"}" = "true" ]; then
-	UNL_TMP_DIR=$(mktemp -d --tmpdir="$WORKDIR" --suffix=_unlink)
-	if [ -d "$UNL_TMP_DIR" ]; then
-		mkdir -p "$UNL_TMP_DIR"
+	if command -v convert >/dev/null 2>&1; then
+		HAS_CONVERT="true"
 	fi
 
-	mapfile -t LINKS < <(find "$OUTPUT_DIR" -type l -print)
+	if [[ "${HAS_RSVG}" == "false" && "${HAS_CONVERT}" == "false" ]]; then
+		printf "Error: Neither rsvg-convert nor ImageMagick convert is installed.\n" >&2
+		exit 1
+	fi
 
-	for unlink in "${LINKS[@]}"; do
-		UN_INPUT=$(readlink -e -f "$unlink")
-		UN_OUTPUT=$(basename "$unlink")
-		cp "$UN_INPUT" "$UNL_TMP_DIR/$UN_OUTPUT"
+	# Process existing PNG files if present
+	local png_count
+	png_count="$(find "${INPUT_DIR}" -maxdepth 1 -type f -name "*.png" | wc -l)"
+	if [[ "${png_count}" -gt 0 && "${HAS_CONVERT}" == "true" ]]; then
+		if [[ "${DEBUG}" == "true" ]]; then
+			printf "Processing PNG files via mogrify...\n"
+		fi
+		mogrify -path "${OUTPUT_DIR}" -auto-orient -thumbnail "${WIDTH}x" "${INPUT_DIR}"/*.png 2>/dev/null || true
+	fi
+
+	# 1. Convert SVG files sequentially
+	local file
+	for file in "${INPUT_DIR}"/*.svg; do
+		if [[ -f "${file}" && ! -L "${file}" ]]; then
+			convert_file "${file}"
+		fi
 	done
 
-	mv "$UNL_TMP_DIR"/* "$OUTPUT_DIR" 2>/dev/null || true
-fi
+	# 2. Link resolution for symlinks
+	for file in "${INPUT_DIR}"/*.svg; do
+		if [[ -L "${file}" && -e "${file}" ]]; then
+			local png_name target_link
+			png_name="$(basename "${file}" .svg).png"
+			target_link="$(basename "$(readlink "${file}")" .svg).png"
+			ln -sf "${target_link}" "${OUTPUT_DIR}/${png_name}"
+			if [[ "${DEBUG}" == "true" ]]; then
+				printf "Created symlink: %s -> %s\n" "${png_name}" "${target_link}"
+			fi
+		fi
+	done
 
+	# 3. Unlink symlinks if requested
+	if [[ "${UNLINK}" == "true" ]]; then
+		unlink_output_symlinks
+	fi
 
+	if [[ "${DEBUG}" == "true" ]]; then
+		printf "SVG to PNG conversion completed successfully.\n"
+	fi
+}
 
-## CleanUp ##
-rm -rf "$WORKDIR"
+main "$@"
