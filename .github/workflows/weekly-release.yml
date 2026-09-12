@@ -1,7 +1,7 @@
 name: Weekly Release
 permissions:
   actions: write
-  contents: read
+  contents: write
 on:
   schedule:
     - cron: '0 23 * * 0'
@@ -142,13 +142,10 @@ jobs:
           TAR_SVG_DARK_NOLINKS: svg_dark_nolinks-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
           TAR_SVG_LIGHT: svg_light-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
           TAR_SVG_LIGHT_NOLINKS: svg_light_nolinks-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
-      - name: Delete old release assets
+      - name: Delete old release and tag
         if: ${{ github.event.inputs.dry_run != 'true' }}
-        uses: andreaswilli/delete-release-assets-action@v4.0.0
-        with:
-          github_token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          tag: latest
-          deleteOnlyFromDrafts: 'false'
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
       - name: Publish
         if: ${{ github.event.inputs.dry_run != 'true' }}
         uses: softprops/action-gh-release@v3
@@ -156,6 +153,8 @@ jobs:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           tag_name: latest
           name: Release - ${{ steps.date.outputs.date }}
+          generate_release_notes: true
+          make_latest: true
           prerelease: false
           files: /tmp/release/*.tar.xz
     env:
@@ -163,3 +162,4 @@ jobs:
       TAR_EXT: ".tar.xz"
       WIDTH_SQUARE: 450
       WIDTH_WIDE: 800
+      GH_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
