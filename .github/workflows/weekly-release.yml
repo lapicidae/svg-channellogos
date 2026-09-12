@@ -47,6 +47,9 @@ jobs:
         run: echo "height=$(echo | awk -v wdth="$WIDTH_WIDE" '{printf ("%d\n", wdth/(16/9))}')" >> $GITHUB_OUTPUT
       - name: Check out repository code
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
       - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
       - name: Prepare
         run: |
@@ -142,10 +145,77 @@ jobs:
           TAR_SVG_DARK_NOLINKS: svg_dark_nolinks-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
           TAR_SVG_LIGHT: svg_light-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
           TAR_SVG_LIGHT_NOLINKS: svg_light_nolinks-${{ steps.date.outputs.date }}${{ env.TAR_EXT }}
-      - name: Delete old release and tag
+      - name: Build Changelog
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v6
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          mode: "COMMIT"
+          fromTag: "latest"
+          toTag: "HEAD"
+          includeOpen: false
+          configurationJson: |
+            {
+              "categories": [
+                {
+                  "title": "## 🆕 New Channels",
+                  "labels": ["NEW"]
+                },
+                {
+                  "title": "## 📦 Updates",
+                  "labels": ["UPDATE"]
+                },
+                {
+                  "title": "## 🛠️ Tools",
+                  "labels": ["TOOLS"]
+                },
+                {
+                  "title": "## 🔧 Workflow",
+                  "labels": ["WORKFLOW"]
+                },
+                {
+                  "title": "## 📝 Dependencies",
+                  "labels": ["Bump"]
+                },
+                {
+                  "title": "## 📋 Other",
+                  "labels": []
+                }
+              ],
+              "template": "#{{CHANGELOG}}",
+              "commit_template": "- #{{TITLE}}",
+              "empty_template": "No changes in this release",
+              "label_extractor": [
+                {
+                  "pattern": "^(NEW|UPDATE|TOOLS|WORKFLOW|Bump):?\\s+([\\s\\S]*)$",
+                  "on_property": "title",
+                  "target": "$1"
+                }
+              ]
+            }
+      - name: Remove category prefixes
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        id: clean_changelog
+        run: |
+          CHANGELOG='${{ steps.changelog.outputs.changelog }}'
+          CHANGELOG=$(printf '%s\n' "$CHANGELOG" | sed -E \
+            -e 's/^(- )?(NEW|UPDATE|TOOLS|WORKFLOW): /\1/' \
+            -e 's/^(- )?Bump /\1Bump /')
+          {
+            echo 'changelog<<EOF'
+            printf '%s\n' "$CHANGELOG"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+      - name: Update latest tag
         if: ${{ github.event.inputs.dry_run != 'true' }}
         run: |
-          gh release delete latest --yes --cleanup-tag || true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -d latest || true
+          git push origin :refs/tags/latest || true
+          git tag -a latest -m "Release ${{ steps.date.outputs.date }}"
+          git push origin latest --force
       - name: Publish
         if: ${{ github.event.inputs.dry_run != 'true' }}
         uses: softprops/action-gh-release@v3
@@ -153,7 +223,7 @@ jobs:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           tag_name: latest
           name: Release - ${{ steps.date.outputs.date }}
-          generate_release_notes: true
+          body: ${{ steps.clean_changelog.outputs.changelog }}
           make_latest: true
           prerelease: false
           files: /tmp/release/*.tar.xz
